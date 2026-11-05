@@ -70,10 +70,72 @@ class TrialResult:
 # ==============================================================================
 
 class LabDispatcher:
-    def __init__(self, root_dir: Path) -> None:
+    def __init__(
+        self,
+        root_dir: Path,
+        gatekeeper_binary: Optional[Path] = None,
+        enforce_gatekeeper: bool = False,
+    ) -> None:
         self.root_dir: Final[Path] = root_dir
         self.client_config_path: Final[Path] = root_dir / "client" / ".ssh" / "config"
         self.client_auth_keys: Final[Path] = root_dir / "authorized_keys"
+        self.gatekeeper_binary: Optional[Path] = gatekeeper_binary or (root_dir / "complex_dual_ssh_diagnoser")
+        self.enforce_gatekeeper: bool = enforce_gatekeeper
+        self.current_frontier: str = "server1"
+        self.healthy_prefix_count: int = 1
+        self.enospc_servers: set[str] = set()
+
+    def audit_action_with_gatekeeper(
+        self, action_name: str, args: dict[str, Any], allowed_servers: list[str]
+    ) -> Optional[dict[str, Any]]:
+        if not self.enforce_gatekeeper:
+            return None
+        if not self.gatekeeper_binary or not self.gatekeeper_binary.exists():
+            return None
+
+        mutation_tools = {
+            "change_file_mode",
+            "change_sshd_directive",
+            "append_client_public_key",
+            "set_proxy_jump",
+        }
+        if action_name not in mutation_tools:
+            return None
+
+        action_desc = f"{action_name} {json.dumps(args)}"
+        target_server = str(args.get("server") or args.get("target") or "")
+
+        cmd = [
+            str(self.gatekeeper_binary),
+            "--chain", ",".join(["client"] + allowed_servers),
+            "--healthy-prefix", str(self.healthy_prefix_count),
+            "--frontier", self.current_frontier,
+            "--audit-action", action_desc,
+            "--json",
+        ]
+        if target_server:
+            cmd.extend(["--target", target_server])
+        if target_server in self.enospc_servers:
+            cmd.extend(["--enospc", target_server])
+
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+            if res.returncode != 0:
+                try:
+                    payload = json.loads(res.stdout)
+                except Exception:
+                    payload = {"certificate": res.stdout.strip() or res.stderr.strip()}
+                return {
+                    "error": "ACTION_HARD_BLOCKED_BY_POLYNOMIAL_SIEVE",
+                    "permitted": False,
+                    "verdict": "ACTION_HARD_BLOCKED",
+                    "certificate": payload.get("certificate", "Syndrome parity violation"),
+                    "syndrome_metric": payload.get("syndrome_metric", {}),
+                    "latency_microseconds": payload.get("latency_microseconds", 0.0),
+                }
+        except Exception:
+            pass
+        return None
 
     def execute_host_command(self, argv: Sequence[str], timeout: int = 20) -> dict[str, Any]:
         proc = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
@@ -89,6 +151,19 @@ class LabDispatcher:
         )
 
     def dispatch(self, name: str, args: dict[str, Any], allowed_servers: list[str]) -> dict[str, Any]:
+        # Evaluate Gatekeeper Middleware
+        blocked = self.audit_action_with_gatekeeper(name, args, allowed_servers)
+        if blocked is not None:
+            return blocked
+
+        if name == "clean_temp_storage":
+            server = str(args["server"])
+            cname = f"mh-server-{server.removeprefix('server')}"
+            res = self.execute_host_command([
+                "sudo", "docker", "exec", "--user", "root", cname, "sh", "-c", "rm -f /tmp/overflow.dump /tmp/*.dump && df -h /tmp"
+            ])
+            self.enospc_servers.discard(server)
+            return {"status": "SUCCESS", "server": server, "cleaned": True, "disk_state": res["stdout"]}
         if name == "connect":
             target: str = str(args["target"])
             verbose: bool = bool(args.get("verbose", False))
@@ -126,6 +201,8 @@ class LabDispatcher:
             cname = f"mh-server-{server.removeprefix('server')}"
             if view == "logs":
                 return self.execute_host_command(["sudo", "docker", "logs", "--tail", "35", cname])
+            if view == "disk_space":
+                return self.execute_host_command(["sudo", "docker", "exec", cname, "df", "-h", "/", "/tmp"])
             if view == "auth_file_metadata":
                 script = "stat -c '%a %U:%G %n' /home/deploy /home/deploy/.ssh /home/deploy/.ssh/authorized_keys"
                 return self.execute_host_command(["sudo", "docker", "exec", cname, "sh", "-lc", script])

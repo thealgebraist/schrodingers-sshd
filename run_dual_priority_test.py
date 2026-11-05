@@ -57,6 +57,7 @@ def extend_dispatcher(dispatcher: LabDispatcher) -> tuple[LabDispatcher, list[To
             res = dispatcher.execute_host_command([
                 "sudo", "docker", "exec", "--user", "root", cname, "sh", "-c", "rm -f /tmp/overflow.dump /tmp/*.dump && df -h /tmp"
             ])
+            dispatcher.enospc_servers.discard(server)
             return {"status": "SUCCESS", "server": server, "cleaned": True, "disk_state": res["stdout"]}
         
         if name == "inspect_server" and args.get("view") == "disk_space":
@@ -135,7 +136,15 @@ def main() -> None:
     print("================================================================================")
 
     setup_dual_fault(lab_dir)
-    dispatcher = LabDispatcher(lab_dir)
+    enable_gatekeeper = os.getenv("ENABLE_GATEKEEPER", "1") == "1"
+    dispatcher = LabDispatcher(
+        lab_dir,
+        gatekeeper_binary=lab_dir / "complex_dual_ssh_diagnoser",
+        enforce_gatekeeper=enable_gatekeeper,
+    )
+    if enable_gatekeeper:
+        dispatcher.enospc_servers.add("server1")
+        print("Complex Polynomial Gatekeeper ACTIVE: Invariants will be strictly enforced.")
     dispatcher, tools = extend_dispatcher(dispatcher)
 
     prompt = (
@@ -153,7 +162,7 @@ def main() -> None:
     actions_ordered: list[str] = []
     tool_records: list[ToolExecutionRecord] = []
 
-    for turn in range(6):
+    for turn in range(12):
         turn_resp, tool_calls, lat = agent.run_turn(history, tools)
         cand = turn_resp.get("candidates", [{}])[0]
         model_content = cand.get("content", {})

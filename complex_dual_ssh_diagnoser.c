@@ -42,6 +42,7 @@
 #include <complex.h>
 #include <assert.h>
 #include <time.h>
+#include <ctype.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -50,6 +51,18 @@
 #define MAX_SERVERS 16
 #define MAX_NAME_LEN 64
 #define MAX_ERR_MSG_LEN 1024
+
+/* Safe string copying helper to eliminate -Wformat-truncation diagnostics */
+static inline void safe_copy(char *dest, size_t dest_size, const char *src) {
+    if (!dest || dest_size == 0) return;
+    if (!src) { dest[0] = '\0'; return; }
+    size_t i = 0;
+    while (src[i] && i + 1 < dest_size) {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+}
 
 /* --- 1. DISCRETE INVARIANT PHASES --- */
 #define PHASE_HEALTHY       0.0                 /* theta = 0     (exp(i*0) = +1)   */
@@ -104,9 +117,11 @@ static void init_dual_cascade(DualCascadeState *state, int n, const char *host_n
 
     for (int j = 0; j < n; j++) {
         if (host_names && host_names[j]) {
-            snprintf(state->hops[j].name, MAX_NAME_LEN, "%s", host_names[j]);
+            safe_copy(state->hops[j].name, MAX_NAME_LEN, host_names[j]);
         } else {
-            snprintf(state->hops[j].name, MAX_NAME_LEN, "server%d", j);
+            char default_name[32];
+            snprintf(default_name, sizeof(default_name), "server%d", j);
+            safe_copy(state->hops[j].name, MAX_NAME_LEN, default_name);
         }
         state->hops[j].hidden_ground_truth = FAULT_NONE;
         state->hops[j].has_enospc = false;
@@ -357,7 +372,7 @@ static void print_cascade_state(const DualCascadeState *state, const char *title
     printf("========================================================================================\n");
 }
 
-int main(void) {
+static int run_benchmark_suite(void) {
     printf("****************************************************************************************\n");
     printf(" DUAL BAYESIAN & EXACT DETERMINISTIC C99 ALGORITHM FOR N-SERVER SSH CASCADES\n");
     printf(" Embedding Causal Invariants in Complex Number Field (C) & Polynomial Codes\n");
@@ -485,6 +500,235 @@ int main(void) {
     printf(" 2. C1P error-correcting polynomial syndrome hard-blocked downstream hop mutations.\n");
     printf(" 3. Vanishing polynomial remainder enforced Kami causal priority in < 1 microsecond!\n");
     printf("========================================================================================\n");
+
+    return 0;
+}
+
+/* --- 7. CLI ACTION PARSER & JSON SERIALIZATION --- */
+
+static int resolve_hop_index(const DualCascadeState *state, const char *arg) {
+    if (!arg || !*arg) return -1;
+    char *endptr = NULL;
+    long val = strtol(arg, &endptr, 10);
+    if (endptr != arg && *endptr == '\0') {
+        if (val >= 0 && val < state->n) return (int)val;
+    }
+    for (int j = 0; j < state->n; j++) {
+        if (strcmp(state->hops[j].name, arg) == 0) return j;
+    }
+    return -1;
+}
+
+static ProposedAction parse_proposed_action_string(const DualCascadeState *state, const char *action_str, int explicit_target) {
+    ProposedAction act;
+    memset(&act, 0, sizeof(act));
+    safe_copy(act.description, sizeof(act.description), action_str);
+    act.target_hop = explicit_target;
+    act.type = ACTION_NONE;
+
+    if (strstr(action_str, "clean_temp_storage") || strstr(action_str, "overflow.dump") || strstr(action_str, "rm -f /tmp")) {
+        act.type = ACTION_CLEAN_STORAGE_ENOSPC;
+    } else if (strstr(action_str, "chmod") || strstr(action_str, "change_file_mode") ||
+               strstr(action_str, "sshd_config") || strstr(action_str, "change_sshd_directive") ||
+               strstr(action_str, "sed") || strstr(action_str, "authorized_keys") ||
+               strstr(action_str, "append_client_public_key") || strstr(action_str, "clear_hosts_deny")) {
+        act.type = ACTION_MUTATE_SSH_CONFIG;
+    } else if (strstr(action_str, "set_proxy_jump") || strstr(action_str, "ProxyJump")) {
+        act.type = ACTION_SET_PROXYJUMP_ROUTE;
+    } else {
+        act.type = ACTION_PROBE_READONLY;
+    }
+
+    if (act.target_hop < 0) {
+        for (int j = 0; j < state->n; j++) {
+            const char *match = strstr(action_str, state->hops[j].name);
+            if (match) {
+                size_t nlen = strlen(state->hops[j].name);
+                char next_c = match[nlen];
+                if (next_c == '\0' || !isalnum((unsigned char)next_c)) {
+                    act.target_hop = j;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (act.target_hop < 0 || act.target_hop >= state->n) {
+        act.target_hop = state->n - 1;
+    }
+    return act;
+}
+
+static void print_verdict_json(const DualCascadeState *state, const ProposedAction *action, const InvariantVerdict *v, double latency_us) {
+    printf("{\n");
+    printf("  \"engine\": \"complex_dual_polynomial_sieve\",\n");
+    printf("  \"permitted\": %s,\n", v->passed ? "true" : "false");
+    printf("  \"verdict\": \"%s\",\n", v->passed ? "ACTION_PERMITTED" : "ACTION_HARD_BLOCKED");
+    printf("  \"target_hop_index\": %d,\n", action->target_hop);
+    printf("  \"target_hop_name\": \"%s\",\n", (action->target_hop >= 0 && action->target_hop < state->n) ? state->hops[action->target_hop].name : "unknown");
+    printf("  \"action_type\": %d,\n", (int)action->type);
+    printf("  \"action_description\": \"%s\",\n", action->description);
+    printf("  \"certificate\": \"%s\",\n", v->certificate);
+    printf("  \"syndrome_metric\": {\"real\": %.6f, \"imag\": %.6f},\n", creal(v->syndrome_metric), cimag(v->syndrome_metric));
+    printf("  \"latency_microseconds\": %.3f,\n", latency_us);
+    printf("  \"servers\": [\n");
+    for (int j = 0; j < state->n; j++) {
+        double r = cabs(state->hops[j].z);
+        double theta = carg(state->hops[j].z);
+        if (theta < 0.0) theta += 2.0 * M_PI;
+        double deg = theta * 180.0 / M_PI;
+        printf("    {\"index\": %d, \"name\": \"%s\", \"magnitude_r\": %.4f, \"phase_deg\": %.1f}%s\n",
+               j, state->hops[j].name, r, deg, (j + 1 < state->n) ? "," : "");
+    }
+    printf("  ]\n");
+    printf("}\n");
+}
+
+static void print_usage(const char *prog) {
+    printf("Usage: %s [OPTIONS]\n", prog);
+    printf("Options:\n");
+    printf("  --benchmark                   Run complete 8-server formal benchmark suite (default)\n");
+    printf("  --audit-action <cmd>          Audit a proposed LLM repair action\n");
+    printf("  --chain <h0,h1,...,hN-1>      Comma-separated list of server hops in the bastion chain\n");
+    printf("  --target <hop_name_or_idx>    Explicit target hop of the proposed action\n");
+    printf("  --frontier <hop_name_or_idx>  Set failing causal frontier hop\n");
+    printf("  --enospc <hop_name_or_idx>    Mark a hop as suffering from critical storage exhaustion (ENOSPC)\n");
+    printf("  --healthy-prefix <count>      Number of proven healthy bastion hops from origin (default: 0)\n");
+    printf("  --json                        Output machine-readable JSON object with polynomial syndrome\n");
+    printf("  --help                        Display this help message\n");
+}
+
+int main(int argc, char *argv[]) {
+    if (argc == 1) {
+        return run_benchmark_suite();
+    }
+
+    const char *audit_action_str = NULL;
+    const char *chain_str = NULL;
+    const char *target_str = NULL;
+    const char *frontier_str = NULL;
+    const char *enospc_str = NULL;
+    int healthy_prefix_count = 0;
+    bool json_mode = false;
+    bool run_bench = false;
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--benchmark") == 0) {
+            run_bench = true;
+        } else if (strcmp(argv[i], "--audit-action") == 0 && i + 1 < argc) {
+            audit_action_str = argv[++i];
+        } else if (strcmp(argv[i], "--chain") == 0 && i + 1 < argc) {
+            chain_str = argv[++i];
+        } else if (strcmp(argv[i], "--target") == 0 && i + 1 < argc) {
+            target_str = argv[++i];
+        } else if (strcmp(argv[i], "--frontier") == 0 && i + 1 < argc) {
+            frontier_str = argv[++i];
+        } else if (strcmp(argv[i], "--enospc") == 0 && i + 1 < argc) {
+            enospc_str = argv[++i];
+        } else if (strcmp(argv[i], "--healthy-prefix") == 0 && i + 1 < argc) {
+            healthy_prefix_count = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--json") == 0) {
+            json_mode = true;
+        } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        }
+    }
+
+    if (run_bench && !audit_action_str) {
+        return run_benchmark_suite();
+    }
+
+    /* Initialize Cascade */
+    DualCascadeState state;
+    char host_names_buf[MAX_SERVERS][MAX_NAME_LEN];
+    const char *host_ptrs[MAX_SERVERS];
+    int chain_count = 0;
+
+    if (chain_str) {
+        const char *p = chain_str;
+        while (*p && chain_count < MAX_SERVERS) {
+            size_t idx = 0;
+            while (*p && *p != ',' && idx + 1 < MAX_NAME_LEN) {
+                host_names_buf[chain_count][idx++] = *p++;
+            }
+            host_names_buf[chain_count][idx] = '\0';
+            if (*p == ',') p++;
+            host_ptrs[chain_count] = host_names_buf[chain_count];
+            chain_count++;
+        }
+    } else {
+        const char *default_hosts[8] = {
+            "client", "server1", "server3", "server2", "server4", "server5", "server6", "server7"
+        };
+        chain_count = 8;
+        for (int j = 0; j < 8; j++) {
+            safe_copy(host_names_buf[j], MAX_NAME_LEN, default_hosts[j]);
+            host_ptrs[j] = host_names_buf[j];
+        }
+    }
+
+    init_dual_cascade(&state, chain_count, host_ptrs);
+
+    /* Mark healthy prefix */
+    if (healthy_prefix_count > chain_count) healthy_prefix_count = chain_count;
+    for (int j = 0; j < healthy_prefix_count; j++) {
+        apply_destructive_elimination(&state, j);
+    }
+
+    /* Set failing frontier hop */
+    if (frontier_str) {
+        int f_idx = resolve_hop_index(&state, frontier_str);
+        if (f_idx >= 0) {
+            set_hop_invariant_phase(&state, f_idx, PHASE_FRONTIER);
+            update_bayesian_likelihood(&state, f_idx, 25.0);
+        }
+    }
+
+    /* Mark ENOSPC hop */
+    if (enospc_str) {
+        int e_idx = resolve_hop_index(&state, enospc_str);
+        if (e_idx >= 0) {
+            state.hops[e_idx].has_enospc = true;
+            set_hop_invariant_phase(&state, e_idx, PHASE_ENOSPC);
+        }
+    }
+
+    compute_state_polynomial(&state);
+
+    if (audit_action_str) {
+        int explicit_target = target_str ? resolve_hop_index(&state, target_str) : -1;
+        ProposedAction action = parse_proposed_action_string(&state, audit_action_str, explicit_target);
+
+        clock_t t0 = clock();
+        InvariantVerdict v = evaluate_action_gatekeeper(&state, &action);
+        clock_t t1 = clock();
+        double latency_us = (double)(t1 - t0) * 1000000.0 / (double)CLOCKS_PER_SEC;
+
+        if (json_mode) {
+            print_verdict_json(&state, &action, &v, latency_us);
+        } else {
+            printf("AUDIT VERDICT: %s\n", v.passed ? "ACTION_PERMITTED" : "ACTION_HARD_BLOCKED");
+            printf("TARGET: %s (Hop %d)\n", state.hops[action.target_hop].name, action.target_hop);
+            printf("ACTION: %s\n", action.description);
+            printf("CERTIFICATE: %s\n", v.certificate);
+            printf("SYNDROME METRIC: (%.4f + %.4fi)\n", creal(v.syndrome_metric), cimag(v.syndrome_metric));
+            printf("LATENCY: %.3f microseconds\n", latency_us);
+        }
+        return v.passed ? 0 : 2;
+    }
+
+    if (json_mode) {
+        ProposedAction dummy;
+        memset(&dummy, 0, sizeof(dummy));
+        InvariantVerdict v_ok;
+        v_ok.passed = true;
+        v_ok.syndrome_metric = 0.0 + 0.0 * I;
+        safe_copy(v_ok.certificate, MAX_ERR_MSG_LEN, "OK: Cascade state initialized");
+        print_verdict_json(&state, &dummy, &v_ok, 0.0);
+    } else {
+        print_cascade_state(&state, "CURRENT CASCADE STATE");
+    }
 
     return 0;
 }

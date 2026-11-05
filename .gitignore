@@ -21,6 +21,14 @@ fast_adversarial_smoke_detector
 graph_problem_detector
 symbolic_adt_diagnoser
 tabula_rasa_diagnoser
+complex_dual_ssh_diagnoser
+
+# Coq / Rocq build artifacts
+*.vo
+*.vok
+*.vos
+*.glob
+*.v.d
 
 # Python & OS
 __pycache__/
