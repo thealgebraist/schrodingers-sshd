@@ -320,7 +320,7 @@ class OpenAILunaAgent(BaseDiagnosticAgent):
 # ==============================================================================
 
 class GeminiArgonAgent(BaseDiagnosticAgent):
-    def __init__(self, api_key: str, model: str = "gemini-4-argon", thinking_budget: int = 1024) -> None:
+    def __init__(self, api_key: str, model: str = os.getenv("GEMINI_MODEL", "gemini-3.8-flash"), thinking_budget: int = 1024) -> None:
         self.api_key: Final[str] = api_key
         self.model: Final[str] = model
         self.thinking_budget: Final[int] = thinking_budget
@@ -772,7 +772,7 @@ Host server3
                     })
 
         elif agent_type == "gemini_argon":
-            gemini_agent: GeminiArgonAgent = GeminiArgonAgent(self.gemini_key, model="gemini-4-argon", thinking_budget=1024)
+            gemini_agent: GeminiArgonAgent = GeminiArgonAgent(self.gemini_key, model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"), thinking_budget=1024)
             gemini_history: list[dict[str, Any]] = [
                 {"role": "user", "parts": [{"text": prompt}]}
             ]

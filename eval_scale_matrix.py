@@ -233,7 +233,7 @@ class ScaleMatrixEvaluator:
                     history.append({"type": "function_call_output", "call_id": call_id, "output": json.dumps(res)})
 
         elif agent_type == "gemini_argon":
-            gemini_agent = GeminiArgonAgent(self.gemini_key, model="gemini-4-argon", thinking_budget=1024)
+            gemini_agent = GeminiArgonAgent(self.gemini_key, model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"), thinking_budget=1024)
             gemini_history: list[dict[str, Any]] = [{"role": "user", "parts": [{"text": prompt}]}]
             for turn in range(4):
                 turn_resp, tool_calls_gemini, lat = gemini_agent.run_turn(gemini_history, tools)

@@ -172,6 +172,8 @@ typedef struct {
     char prohibited_actions[MAX_ERR_MSG_LEN];
     int  epistemic_probes_used;
     uint64_t latency_nanos;
+    bool system_enospc_active;
+    char enospc_host[MAX_NAME_LEN];
 } DiagnosticReport;
 
 typedef struct {
@@ -519,6 +521,9 @@ typedef struct {
     char hostkey_mismatch_host[MAX_NAME_LEN];
     bool has_bad_modes_sshd;
     char bad_modes_host[MAX_NAME_LEN];
+    bool has_enospc;
+    char enospc_host[MAX_NAME_LEN];
+    char raw_enospc_line[MAX_ERR_MSG_LEN];
 } TraceEvidence;
 
 static bool trace_has_auth_host(const TraceEvidence *ev, const char *host) {
@@ -682,6 +687,20 @@ static TraceEvidence parse_trace_buffer(const char *trace_buf) {
             ev.has_bad_modes_sshd = true;
             if (ev.has_auth_denied) {
                 safe_copy(ev.bad_modes_host, sizeof(ev.bad_modes_host), ev.auth_denied_host);
+            }
+        }
+
+        /* 6. Extract critical system storage emergency (ENOSPC / No space left on device) */
+        if (strstr(line, "No space left on device") || strstr(line, "ENOSPC")) {
+            ev.has_enospc = true;
+            safe_copy(ev.raw_enospc_line, sizeof(ev.raw_enospc_line), line);
+            if (ev.auth_count > 0) {
+                safe_copy(ev.enospc_host, sizeof(ev.enospc_host),
+                          ev.authenticated_hosts[ev.auth_count - 1]);
+            } else if (ev.has_auth_denied) {
+                safe_copy(ev.enospc_host, sizeof(ev.enospc_host), ev.auth_denied_host);
+            } else {
+                safe_copy(ev.enospc_host, sizeof(ev.enospc_host), "target");
             }
         }
 
@@ -1046,12 +1065,12 @@ static DiagnosticReport diagnose_chain_with_evidence(
     for (size_t i = 0; i < DISAMBIGUATION_TABLE_SIZE; i++) {
         if (DISAMBIGUATION_TABLE[i].type == faulty_hop->active_fault) {
             snprintf(rep.root_cause_explanation, MAX_ERR_MSG_LEN,
-                     "%s (Host '%s'). Evidence: %s",
+                     "%.300s (Host '%.64s'). Evidence: %.300s",
                      DISAMBIGUATION_TABLE[i].causal_explanation,
                      faulty_hop->host_name,
                      faulty_hop->diagnostic_evidence[0] ? faulty_hop->diagnostic_evidence : "Confirmed by causal sieve");
             snprintf(rep.recommended_action, MAX_ERR_MSG_LEN,
-                     "Target host '%s': %s",
+                     "Target host '%.64s': %.400s",
                      faulty_hop->host_name, DISAMBIGUATION_TABLE[i].recommended_repair);
             safe_copy(rep.prohibited_actions, MAX_ERR_MSG_LEN, DISAMBIGUATION_TABLE[i].prohibited_actions);
             found_diag = true;
@@ -1067,6 +1086,12 @@ static DiagnosticReport diagnose_chain_with_evidence(
                  "Inspect configuration and connectivity on host '%s'.", faulty_hop->host_name);
         safe_copy(rep.prohibited_actions, MAX_ERR_MSG_LEN,
                   "DO NOT modify configuration or permissions on downstream unreached servers!");
+    }
+
+    /* Record system storage state */
+    rep.system_enospc_active = ev->has_enospc;
+    if (ev->has_enospc) {
+        safe_copy(rep.enospc_host, sizeof(rep.enospc_host), ev->enospc_host[0] ? ev->enospc_host : cmd->target_host);
     }
 
     /* Check C1P contiguity */
@@ -1177,7 +1202,37 @@ static AuditVerdict audit_proposed_llm_mutation(const char *proposed_cmd, const 
         }
     }
 
-    /* 2. Audit target against causal zones */
+    /* 2. Audit Causal Priority Scheduling: Tier 1 System Invariant vs Tier 2 SSH Config */
+    if (rep->system_enospc_active) {
+        bool is_storage_cleanup = (strstr(proposed_cmd, "clean_temp_storage") != NULL ||
+                                   strstr(proposed_cmd, "rm -f /tmp") != NULL ||
+                                   strstr(proposed_cmd, "rm -rf /tmp") != NULL ||
+                                   strstr(proposed_cmd, "rm /tmp") != NULL ||
+                                   strstr(proposed_cmd, "truncate") != NULL ||
+                                   strstr(proposed_cmd, "fallocate") != NULL ||
+                                   strstr(proposed_cmd, "mount -o remount") != NULL);
+        if (!is_storage_cleanup) {
+            bool is_config_mutation = (strstr(proposed_cmd, "chmod") != NULL ||
+                                       strstr(proposed_cmd, "sed") != NULL ||
+                                       strstr(proposed_cmd, "change_file_mode") != NULL ||
+                                       strstr(proposed_cmd, "change_sshd_directive") != NULL ||
+                                       strstr(proposed_cmd, "append_client_public_key") != NULL ||
+                                       strstr(proposed_cmd, "authorized_keys") != NULL ||
+                                       strstr(proposed_cmd, "sshd_config") != NULL ||
+                                       strstr(proposed_cmd, "kill -HUP") != NULL ||
+                                       strstr(proposed_cmd, "systemctl") != NULL);
+            if (is_config_mutation) {
+                v.permitted = false;
+                safe_copy(v.target_entity, sizeof(v.target_entity), rep->enospc_host[0] ? rep->enospc_host : rep->causal_frontier_host);
+                snprintf(v.reason, sizeof(v.reason),
+                         "CAUSAL PRIORITY VIOLATION (Kami Invariant Theorem 1): Storage emergency active (ENOSPC / 100%% full /tmp on host '%.64s'). Model attempted SSH configuration mutation '%.200s' while storage headroom is exhausted! Tier 1 (Storage Headroom) must be cleared via clean_temp_storage before Tier 2 (SSH configuration mutations) can be executed. Configuration writes will fail or cause corruption under ENOSPC!",
+                         v.target_entity, proposed_cmd);
+                return v;
+            }
+        }
+    }
+
+    /* 3. Audit target against causal zones */
 
     /* Check if target is in the unverified opaque suffix (downstream) */
     for (int i = 0; i < rep->opaque_suffix_count; i++) {
@@ -1249,6 +1304,10 @@ static void print_diagnostic_report_json(const DiagnosticReport *rep) {
     printf("  \"root_cause_explanation\": \"%s\",\n", rep->root_cause_explanation);
     printf("  \"recommended_action\": \"%s\",\n", rep->recommended_action);
     printf("  \"prohibited_actions\": \"%s\",\n", rep->prohibited_actions);
+    printf("  \"system_enospc_active\": %s,\n", rep->system_enospc_active ? "true" : "false");
+    if (rep->system_enospc_active) {
+        printf("  \"enospc_host\": \"%s\",\n", rep->enospc_host);
+    }
     printf("  \"telemetry_metrics\": {\n");
     printf("    \"epistemic_probes_used\": %d,\n", rep->epistemic_probes_used);
     printf("    \"latency_nanoseconds\": %lld,\n", (long long)rep->latency_nanos);
@@ -1322,6 +1381,7 @@ int main(int argc, char **argv) {
         printf("  --chain <host1,host2,...>            Explicitly specify jump chain topology\n");
         printf("  --audit-action \"<shell_cmd>\"         Audit a proposed LLM shell command\n");
         printf("  --benchmark-dbc6                     Run synthetic Deceptive Bastion Cascade test\n");
+        printf("  --benchmark-dual-enospc              Run synthetic Dual-Fault ENOSPC + StrictModes test\n");
         printf("  --check-c1p <hex_w0> <hex_w1>        Run sub-nanosecond 128-bit C1P contiguity test\n");
         printf("  --help, -h                           Show this help\n");
         return 0;
@@ -1354,6 +1414,65 @@ int main(int argc, char **argv) {
         printf("========================================================================================\n");
         printf(" VERIFIED: Root-cause AllowTcpForwarding isolated on Hop 1 in < 5 µs.\n");
         printf("           Downstream decoy mutation on Hop 4 HARD-BLOCKED (0 wrong repairs guaranteed)!\n");
+        printf("========================================================================================\n");
+        return 0;
+    }
+
+    /* Option: Synthetic Benchmark Dual-Fault ENOSPC */
+    if (argc >= 2 && strcmp(argv[1], "--benchmark-dual-enospc") == 0) {
+        printf("========================================================================================\n");
+        printf(" BENCHMARK: DUAL-FAULT CAUSAL PRIORITY SCHEDULER (ENOSPC + STRICTMODES)\n");
+        printf("========================================================================================\n\n");
+
+        InfrastructureChain chain;
+        memset(&chain, 0, sizeof(chain));
+        chain.hop_count = 2;
+        safe_copy(chain.hops[0].host_name, MAX_NAME_LEN, "localhost");
+        chain.hops[0].is_healthy = true;
+        safe_copy(chain.hops[1].host_name, MAX_NAME_LEN, "server1");
+        chain.hops[1].is_healthy = false;
+        chain.hops[1].substage = STAGE_SSH_PUBLICKEY_AUTH;
+        chain.hops[1].active_fault = SYM_AUTH_KEYS_PERMS_INSECURE;
+
+        ParsedSSHCommand cmd = parse_ssh_command_pda("ssh server1");
+        TraceEvidence ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.has_auth_denied = true;
+        safe_copy(ev.auth_denied_host, sizeof(ev.auth_denied_host), "server1");
+        ev.has_bad_modes_sshd = true;
+        safe_copy(ev.bad_modes_host, sizeof(ev.bad_modes_host), "server1");
+        ev.has_enospc = true;
+        safe_copy(ev.enospc_host, sizeof(ev.enospc_host), "server1");
+        safe_copy(ev.raw_enospc_line, sizeof(ev.raw_enospc_line), "sh: write error: No space left on device");
+
+        DiagnosticReport rep = diagnose_chain_with_evidence(&chain, &cmd, &ev);
+        print_diagnostic_report_json(&rep);
+        printf("\n");
+
+        /* 1. Proposed Action 1 (VIOLATION): chmod 0600 authorized_keys while ENOSPC is active */
+        const char *violating_action = "ssh server1 'chmod 0600 ~/.ssh/authorized_keys'";
+        AuditVerdict v1 = audit_proposed_llm_mutation(violating_action, &rep);
+        print_audit_verdict_json(&v1, violating_action);
+        printf("\n");
+        assert(v1.permitted == false);
+
+        /* 2. Proposed Action 2 (PERMITTED): clean_temp_storage restores headroom first */
+        const char *valid_priority1 = "clean_temp_storage server1";
+        AuditVerdict v2 = audit_proposed_llm_mutation(valid_priority1, &rep);
+        print_audit_verdict_json(&v2, valid_priority1);
+        printf("\n");
+        assert(v2.permitted == true);
+
+        /* 3. Once storage is cleared, chmod is permitted */
+        rep.system_enospc_active = false;
+        AuditVerdict v3 = audit_proposed_llm_mutation(violating_action, &rep);
+        print_audit_verdict_json(&v3, violating_action);
+        printf("\n");
+        assert(v3.permitted == true);
+
+        printf("========================================================================================\n");
+        printf(" VERIFIED: Kami Causal Priority Theorem 1 Enforced in C99 Gatekeeper.\n");
+        printf("           Premature config edits HARD-BLOCKED until storage emergency cleared!\n");
         printf("========================================================================================\n");
         return 0;
     }

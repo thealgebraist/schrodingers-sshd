@@ -67,7 +67,7 @@ def run_experiment() -> None:
     subprocess.run(["sudo", "docker", "exec", "-i", "--user", "root", "mh-server-1", "sh", "-c", "cat > /home/deploy/.ssh/authorized_keys"], input=new_key.encode(), check=True)
 
     print("=== Testing Gemini Argon on key-options-no-forwarding ===")
-    g_agent = GeminiArgonAgent(gk, model="gemini-4-argon", thinking_budget=1024)
+    g_agent = GeminiArgonAgent(gk, model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"), thinking_budget=1024)
     g_hist = [{"role": "user", "parts": [{"text": prompt}]}]
     g_action = None
     for turn in range(4):
