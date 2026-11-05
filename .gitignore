@@ -22,6 +22,7 @@ graph_problem_detector
 symbolic_adt_diagnoser
 tabula_rasa_diagnoser
 complex_dual_ssh_diagnoser
+dual_tcp_complex_model
 
 # Coq / Rocq build artifacts
 *.vo
