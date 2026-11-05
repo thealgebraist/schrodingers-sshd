@@ -1,0 +1,458 @@
+{
+  "topology": {
+    "servers": 8,
+    "client_container": "mh-client",
+    "networks": [
+      "mh-client-1",
+      "mh-1-3",
+      "mh-3-2",
+      "mh-2-4",
+      "mh-4-5",
+      "mh-5-6",
+      "mh-6-7",
+      "mh-7-8"
+    ],
+    "paths": {
+      "server2": [
+        "client",
+        "server1",
+        "server3",
+        "server2"
+      ],
+      "server8": [
+        "client",
+        "server1",
+        "server3",
+        "server2",
+        "server4",
+        "server5",
+        "server6",
+        "server7",
+        "server8"
+      ]
+    }
+  },
+  "memory_policy": {
+    "responses": "Each trial starts a new Python process and request sequence with store=false; no previous_response_id or prior trial content is sent. Tool history is local to one run. Trials use fresh containers/logs; the client config and key mode are restored before each run. start.sh now automates restoration of the client baseline.",
+    "codex_task_model": "Each trial uses a new thread; no follow-up is sent to a previous test thread."
+  },
+  "trials": [
+    {
+      "id": "01a179df-6001-7d71-bc53-9a596d4bacc9",
+      "model": "gpt-6-luna",
+      "channel": "Codex task thread",
+      "fault": "Server 3 authorized_keys mode 0666; bytes intact.",
+      "result": "success",
+      "diagnosis": "OpenSSH strict-mode check rejected the world-writable authorized_keys file on an intermediate hop.",
+      "change": "chmod 600 on Server 3's authorized_keys only.",
+      "verification": "server2 and server4 remote commands both succeeded; server IDs and authorized_keys hash were unchanged."
+    },
+    {
+      "id": "trial_python_responses_1793046351_ca2850a9.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run",
+      "fault": "None; clean control.",
+      "result": "success_noop",
+      "diagnosis": "Both target routes were available.",
+      "change": "None.",
+      "verification": "Both SSH commands succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793046429_f9c5944a.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run",
+      "fault": "Server 4 alias used ProxyJump server3 instead of server2.",
+      "result": "success",
+      "diagnosis": "Server 3 could not reach Server 4; the target's effective jump host bypassed Server 2.",
+      "change": "Changed only Server 4's ProxyJump from server3 to server2.",
+      "verification": "server2 and server4 remote commands both succeeded; server configuration and data were unchanged."
+    },
+    {
+      "id": "trial_python_responses_1793046488_16578af3.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run",
+      "fault": "Client private key mode 0644.",
+      "result": "partial_repair_with_unnecessary_change",
+      "diagnosis": "Correctly identified that SSH ignored the local private key because its mode was too open.",
+      "necessary_change": "Changed only the client key mode from 0644 to 0600; key bytes and owner were preserved.",
+      "unnecessary_change": "Changed Server 2's ProxyJump from server3 to server1 after the earlier authentication failures triggered a temporary OpenSSH per-source penalty.",
+      "recovery": "Operator restored Server 2's ProxyJump to server3. After the penalty expired, both routes succeeded.",
+      "assessment": "Failed the no-unnecessary-fixes requirement. The model should have waited or retested after identifying the transient server-side penalty."
+    },
+    {
+      "id": "trial_python_responses_1793046738_66a5d1c4.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run",
+      "fault": "Server 3 had AllowTcpForwarding no, blocking both downstream ProxyJump routes.",
+      "result": "success",
+      "diagnosis": "SSH reached Server 3 but forwarding was refused; target servers were running and effective jump routes were as configured.",
+      "change": "Changed only Server 3 AllowTcpForwarding from no to yes, validated sshd configuration, and sent SIGHUP to reload sshd.",
+      "verification": "server2 and server4 remote commands both succeeded. Server container IDs and authorized_keys hashes remained unchanged; the Server 3 sshd_config diff contains only the required directive."
+    },
+    {
+      "id": "trial_python_responses_1793046791_9b840643.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run",
+      "fault": "Server 2 had AllowTcpForwarding no; server2 target itself remained reachable but it could not forward the server4 connection.",
+      "result": "success_selective_repair",
+      "diagnosis": "server2 succeeded; server4 failed because server2 refused its ProxyJump forwarding request, as its logs and sshd configuration showed.",
+      "change": "Changed only server2 AllowTcpForwarding from no to yes and reloaded sshd.",
+      "verification": "Both remote commands succeeded. Container IDs and authorized_keys hashes were unchanged; sshd_config diff on server2 contains only the required directive."
+    },
+    {
+      "id": "trial_python_responses_1793047652_96ebd51a.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "None; clean control.",
+      "result": "success_noop",
+      "diagnosis": "Both the short server2 route and eight-server server8 route were available.",
+      "change": "None.",
+      "verification": "Both remote hostname commands returned the expected target names."
+    },
+    {
+      "id": "trial_python_responses_1793047723_2ac4f493.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no; target server2 remained reachable while server8 failed.",
+      "result": "success",
+      "diagnosis": "Verbose SSH output and server configuration identified Server 6 as the forwarding blocker.",
+      "change": "Changed only Server 6 AllowTcpForwarding from no to yes, validated, and reloaded sshd.",
+      "verification": "Both server2 and server8 remote hostname commands succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793047853_6bf2bd6d.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "A ProxyJump server1 directive in the early Host * stanza overrode the later per-target ProxyJump entries.",
+      "result": "diagnosed_but_unresolved",
+      "diagnosis": "The model correctly observed that effective options still selected server1 after editing target stanzas.",
+      "change": "Attempted target-specific ProxyJump updates for server2 and server8; Host * precedence made both ineffective.",
+      "verification": "Both routes remained unavailable. The toolset lacked a narrow operation to remove the overriding Host * directive."
+    },
+    {
+      "id": "trial_python_responses_1793047988_309d9748.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 2 client-key entry forced /bin/false for remote sessions but still allowed TCP forwarding, so server2 command failed while server8 remained reachable through server2.",
+      "result": "success_nonmonotone_case",
+      "diagnosis": "The model identified the authorized_keys command= restriction and recognized it was separate from forwarding.",
+      "change": "Removed only command=\"/bin/false\" from the client key entry on Server 2.",
+      "verification": "Both target hostname commands succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793048068_ad8c607f.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no. All other servers and client route were at baseline.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Inferred a route or forwarding problem at another location without evidence locating the fault on Server 6.",
+      "change": [
+        "server8 ProxyJump=server1"
+      ],
+      "verification": "The wrong change did not restore server8; the actual Server 6 fault remained.",
+      "memory_isolation": "Fresh store=false request; fresh containers and logs; client config and key mode restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048098_88870e80.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no. All other servers and client route were at baseline.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "success",
+      "diagnosis": "Correctly identified Server 6 forwarding disabled.",
+      "change": [
+        "server6 AllowTcpForwarding=yes"
+      ],
+      "verification": "Both routes succeeded after the Server 6 repair.",
+      "memory_isolation": "Fresh store=false request; fresh containers and logs; client config and key mode restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048121_8bad0c55.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no. All other servers and client route were at baseline.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Inferred a route or forwarding problem at another location without evidence locating the fault on Server 6.",
+      "change": [
+        "server7 AllowTcpForwarding=yes"
+      ],
+      "verification": "The wrong change did not restore server8; the actual Server 6 fault remained.",
+      "memory_isolation": "Fresh store=false request; fresh containers and logs; client config and key mode restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048149_6d04da4a.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no. All other servers and client route were at baseline.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "success",
+      "diagnosis": "Correctly identified Server 6 forwarding disabled.",
+      "change": [
+        "server6 AllowTcpForwarding=yes"
+      ],
+      "verification": "Both routes succeeded after the Server 6 repair.",
+      "memory_isolation": "Fresh store=false request; fresh containers and logs; client config and key mode restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048180_1d3123f7.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no. All other servers and client route were at baseline.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Inferred a route or forwarding problem at another location without evidence locating the fault on Server 6.",
+      "change": [
+        "server7 AllowTcpForwarding=yes"
+      ],
+      "verification": "The wrong change did not restore server8; the actual Server 6 fault remained.",
+      "memory_isolation": "Fresh store=false request; fresh containers and logs; client config and key mode restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048209_8e6df797.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 had AllowTcpForwarding no. All other servers and client route were at baseline.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Inferred a route or forwarding problem at another location without evidence locating the fault on Server 6.",
+      "change": [
+        "server8 ProxyJump=server2"
+      ],
+      "verification": "The wrong change did not restore server8; the actual Server 6 fault remained.",
+      "memory_isolation": "Fresh store=false request; fresh containers and logs; client config and key mode restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793047385_1695dcaf.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, five-server topology",
+      "fault": "Server 4 had AllowTcpForwarding no, blocking the added server5 hop while server2 remained available.",
+      "result": "success",
+      "diagnosis": "Correctly identified Server 4 as the forwarding blocker.",
+      "change": "Changed only Server 4 AllowTcpForwarding to yes, validated, and reloaded sshd.",
+      "verification": "server2 and server5 commands both succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793047455_8c56209f.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, five-server topology",
+      "fault": "Server 4 PermitOpen allowed server2:22 but not server5:22.",
+      "result": "success",
+      "diagnosis": "Correctly distinguished PermitOpen from AllowTcpForwarding.",
+      "change": "Added server5:22 to the existing PermitOpen allowlist while preserving server2:22.",
+      "verification": "Both targets succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793047548_ea121612.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, five-server topology",
+      "fault": "The client key on Server 4 used the authorized_keys restrict option, which blocked forwarding.",
+      "result": "success",
+      "diagnosis": "Correctly identified the key-level forwarding restriction rather than changing sshd_config.",
+      "change": "Added port-forwarding to the existing client key options while preserving the key.",
+      "verification": "Both targets succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793047586_e5f84523.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, five-server topology",
+      "fault": "Same Server 4 client-key restrict case under a shorter SSH-only prompt.",
+      "result": "success",
+      "diagnosis": "Correctly identified the key-level restriction.",
+      "change": "Enabled port forwarding for the existing client key entry only.",
+      "verification": "Both targets succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793047761_a323b6d6.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 7 had AllowTcpForwarding no.",
+      "result": "success",
+      "diagnosis": "Correctly identified Server 7 as the final jump host refusing forwarding.",
+      "change": "Changed only Server 7 AllowTcpForwarding to yes and reloaded sshd.",
+      "verification": "Both target commands succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793048380_ac7655b6.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Client private-key file mode was 0644.",
+      "result": "success",
+      "diagnosis": "Correctly identified that the client ignored the private key because its mode was too open.",
+      "change": "Changed only the client key mode to 0600; bytes were unchanged.",
+      "verification": "Both target commands succeeded."
+    },
+    {
+      "id": "trial_python_responses_1793048481_e02e4b19.json",
+      "fault": "Server 4 had AllowTcpForwarding no.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Attributed the deep route failure to Server 7, the target’s immediate jump host.",
+      "change": "Enabled AllowTcpForwarding on Server 7; actual Server 4 fault remained.",
+      "verification": "Server8 remained unreachable.",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, and client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048508_29647604.json",
+      "fault": "Server 5 had AllowTcpForwarding no.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Attributed the deep route failure to Server 7, the target’s immediate jump host.",
+      "change": "Enabled AllowTcpForwarding on Server 7; actual Server 5 fault remained.",
+      "verification": "Server8 remained unreachable.",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, and client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048537_0f521ab9.json",
+      "fault": "Server 7 had AllowTcpForwarding no.",
+      "result": "success",
+      "diagnosis": "Correctly identified the immediate jump host as the forwarding blocker.",
+      "change": "Enabled AllowTcpForwarding on Server 7 and reloaded sshd.",
+      "verification": "Both targets succeeded.",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, and client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048635_f28b908b.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 authorized_keys mode 0644, which is readable but not group/world-writable.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "success_noop",
+      "diagnosis": "No SSH fault was present at this mode; the model correctly reported both routes working.",
+      "change": "None.",
+      "verification": "Both targets connected.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048656_2108a74d.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 authorized_keys mode 0666; OpenSSH StrictModes rejects the writable file.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_noop_repair",
+      "diagnosis": "Saw the client key entry but did not check file mode.",
+      "change": "Tried to append a duplicate client key; tool correctly did nothing because it was already present.",
+      "verification": "server8 remained unreachable.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048687_bce98ddb.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 authorized_keys mode 0666.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Attributed the deep failure to the client route.",
+      "change": "Changed server8 ProxyJump from server7 to server2.",
+      "verification": "server8 remained unreachable; server6 mode was still 0666.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048713_339dfae0.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 authorized_keys mode 0666.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_noop_repair",
+      "diagnosis": "Located authentication failure at server6 but assumed the client key was missing.",
+      "change": "Tried to append the already-present client key.",
+      "verification": "server8 remained unreachable.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048741_f60fe0f9.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 authorized_keys mode 0666.",
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "result": "misdiagnosed_wrong_repair",
+      "diagnosis": "Attributed the failure to the client route.",
+      "change": "Changed server8 ProxyJump from server7 to server1.",
+      "verification": "server8 remained unreachable; server6 mode was still 0666.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, client baseline restored before run."
+    },
+    {
+      "id": "trial_python_responses_1793048770_bca2bc4f.json",
+      "model": "gpt-6-luna",
+      "channel": "Python Responses API, fresh stateless run, eight-server topology",
+      "fault": "Server 6 authorized_keys mode 0666.",
+      "prompt": "Establish remote command access to both targets server2 and server8; inspect evidence, make the smallest reversible supported change, and verify both.",
+      "result": "success",
+      "diagnosis": "Full diagnostic prompt identified OpenSSH StrictModes rejecting a group/world-writable authorized_keys file.",
+      "change": "Changed only the mode on server6 authorized_keys from 0666 to 0600.",
+      "verification": "Both targets connected; file contents were unchanged.",
+      "memory_isolation": "Fresh store=false request, fresh containers/logs, client baseline restored before run."
+    }
+  ],
+  "current_state": {
+    "client_key_mode": "0600",
+    "server2_proxyjump": "server3",
+    "server8_proxyjump": "server7",
+    "all_servers_running": true,
+    "server2_login": "verified after final reset",
+    "server8_login": "verified after final reset",
+    "authorized_keys_hash": "a5b1610b2bd428e756545e434eb3d21bf2e9cb7ac851d97cf6b26d155f213d1e on servers 1-8",
+    "server3_allow_tcp_forwarding": "default yes",
+    "server6_allow_tcp_forwarding": "default yes",
+    "host_star_proxyjump": "none"
+  },
+  "analysis": {
+    "pass_chain": "For client→server1→server3→server2→server4→server5→server6→server7→server8, a forwarding failure at Server 4–7 leaves server2 reachable and server8 unreachable. The endpoint pair alone does not identify which intermediate hop failed.",
+    "constrained_prompt_result": {
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "fault": "Server 6 AllowTcpForwarding no",
+      "runs": 6,
+      "wrong_repairs": 4,
+      "correct_repairs": 2,
+      "wrong_rate": 0.6667,
+      "note": "Initial empirical result for one prompt/fault pair; sample is small and does not generalize to other prompts or faults."
+    },
+    "location_varied_result": {
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "fault_family": "One AllowTcpForwarding no at a selected hop among servers 4, 5, 6, and 7; run allocation was six at Server 6 and one each at servers 4, 5, and 7. All other state was baseline.",
+      "runs": 9,
+      "wrong_repairs": 6,
+      "correct_repairs": 3,
+      "wrong_rate": 0.6667,
+      "note": "This deliberately weighted initial sample is not a general model error rate. The six Server 6 repetitions produced 4 wrong repairs and 2 correct repairs; the Server 4 and Server 5 cases were both misdiagnosed, while the Server 7 control was diagnosed correctly."
+    },
+    "auth_file_mode_constrained_prompt": {
+      "prompt": "Connect to server2 and server8. If either fails, apply the most likely single SSH fix based on at most one diagnostic call, then verify both.",
+      "fault": "Server 6 authorized_keys mode 0666",
+      "runs": 4,
+      "correct_repairs": 0,
+      "wrong_repairs": 2,
+      "no_op_repairs": 2,
+      "repair_failure_rate": 1.0,
+      "comparison": "The full diagnostic prompt correctly changed only the mode in one separate run. A 0644 negative control passed without changes because it was not writable by other users.",
+      "note": "Small initial sample; each run reset all containers/logs and used a fresh store=false request."
+    },
+    "four_server_authmode": {
+      "topology": "four servers; client -> server1 -> server3 -> server2 -> server4; only aliases server1-server4 exposed to the model",
+      "fault": "Server 2 authorized_keys mode 0666; key bytes unchanged; OpenSSH StrictModes rejects the otherwise matching public key.",
+      "prompt": "Use SSH from this client to run hostname on server4. If it fails, make at most one read-only diagnostic tool call, then choose one minimal reversible SSH fix and verify server4. Do not reset containers or replace keys.",
+      "output_contract": "Final response requested as JSON with response and thinking fields. thinking is a concise evidence-linked explanation, not private hidden chain-of-thought.",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "low",
+      "runs": 20,
+      "fresh_run_policy": "Each run used a new Python process, store=false, no previous_response_id, fresh recreated containers and logs, and restored client baseline.",
+      "correct_repairs": 0,
+      "wrong_repairs": 18,
+      "ineffective_no_op_repairs": 2,
+      "successful_verifications": 0,
+      "wrong_repair_rate": 0.9,
+      "task_failure_rate": 1.0,
+      "wrong_repair_pattern": "18 changed server4 ProxyJump to server1 or server3 despite server2 remaining on the path; 2 attempted ineffective public-key or forced-command changes. None changed server2 authorized_keys mode.",
+      "evidence": "See per-run trial_python_responses_<unix>_<id>.json files with complete API request/response bodies and tool events.",
+      "limits": "An exact-prompt, exact-topology, exact-fault empirical result; sample size is 20 and is not a population-wide model error estimate."
+    }
+  }
+}

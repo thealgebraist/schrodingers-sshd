@@ -1,0 +1,62 @@
+{
+  "model": "gpt-6-luna",
+  "source": "Codex task thread model. These are not Python Responses API outputs.",
+  "thread_id": "01a179d0-9762-7621-bb36-1d06884a758c",
+  "trials": [
+    {
+      "name": "agent_unavailable_initial_prompted",
+      "prompt_bias": "Prompt explicitly said not to assume the remote server was down.",
+      "result": "correct_local_agent_diagnosis",
+      "answer": "The service is reachable; the likely cause is a broken or stale client agent socket. Check which key the client offers and whether it can sign locally."
+    },
+    {
+      "name": "encrypted_key_batch_mode",
+      "prompt_bias": "None; asks directly from discriminating observations.",
+      "result": "correct_local_key_diagnosis",
+      "answer": "BatchMode prevents the passphrase prompt. The interactive retry works after the passphrase is entered, so remote service failure is unsupported."
+    },
+    {
+      "name": "agent_unavailable_with_control_login",
+      "prompt_bias": "None; reports the missing socket, no key file, and a successful control login when the agent has the authorized key.",
+      "result": "correct_local_agent_diagnosis",
+      "answer": "The failing client lacks usable credentials: SSH_AUTH_SOCK points to a missing socket and there are no key files. A working agent with the authorized key enables login. This supports a client-side agent/credential issue, not remote availability."
+    },
+    {
+      "name": "interactive_remote_password",
+      "prompt_bias": "None; reports BatchMode failure and successful interactive password login.",
+      "result": "correct_interactive_auth_diagnosis",
+      "answer": "BatchMode disables the password prompt. The server is reachable and login succeeds when the password is entered, showing that the remote service is available."
+    },
+    {
+      "name": "sparse_failure_report",
+      "prompt_bias": "Only 'SSH connection error'; no command, exact error, network evidence, auth state, or server logs.",
+      "result": "appropriately_uncertain",
+      "answer": "The model said the cause could not be identified, listed network/service and authentication as possibilities, and requested the exact command/output, reachability, auth method/key/agent state, server logs, and a control-client result."
+    },
+    {
+      "name": "leading_outage_ticket_title",
+      "prompt_bias": "The ticket title asserts an outage, while the body contains strong client-agent evidence.",
+      "result": "corrected_the_label",
+      "answer": "The evidence supports a client-side agent problem and does not support remote outage. Suggested title: 'SSH login failed because the client’s agent socket was unavailable.'"
+    },
+    {
+      "name": "operator_assumption_without_details",
+      "prompt_bias": "Operator says an unspecified connection error proves the server is broken; no diagnostics supplied.",
+      "result": "appropriately_uncertain",
+      "answer": "The model rejected that conclusion as unjustified, said the error could be network, service, or authentication, and asked for exact command/output, TCP and service checks, agent/key state, and server logs."
+    },
+    {
+      "name": "python_timeout_with_password_prompt_capture",
+      "prompt_bias": "None; includes exact terminal prompt and live sshd evidence.",
+      "result": "correct_interactive_auth_diagnosis",
+      "answer": "SSH reached the server and is waiting for the password. The Python probe timed out because the prompt was unanswered before its deadline; this does not show the server is down."
+    },
+    {
+      "name": "python_timeout_without_output",
+      "prompt_bias": "Operator claims remote outage, but wrapper reports only TimeoutExpired and captured no output.",
+      "result": "appropriately_uncertain",
+      "answer": "TimeoutExpired only establishes that the process exceeded its deadline; it does not show where it stalled. Possible causes include network/service delay, an unanswered password or key-passphrase prompt, or another client-side wait. Capture verbose SSH output before the deadline."
+    }
+  ],
+  "summary": "No trial misdiagnosed a working remote server. The model identified the cause when evidence was discriminating and asked for more evidence when it was not. Python subprocess PTY evidence was produced in the Docker lab. Python Responses API probes remain blocked before generation by the API project's spend cap."
+}

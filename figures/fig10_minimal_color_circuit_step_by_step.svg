@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 660" width="1040" height="660">
+<defs>
+  <linearGradient id="bg10" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#f1f5f9"/>
+  </linearGradient>
+  <marker id="arrGold10" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b"/>
+  </marker>
+  <marker id="arrBlue10" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+  </marker>
+  <marker id="arrGreen10" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#16a34a"/>
+  </marker>
+  <marker id="arrRed10" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
+  </marker>
+</defs>
+<rect width="1040" height="660" rx="10" fill="url(#bg10)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="14" width="1000" height="42" rx="6" fill="#0f172a"/>
+<text x="520" y="40" font-family="Helvetica, Arial, sans-serif" font-size="14.8" font-weight="bold" fill="#ffffff" text-anchor="middle">
+Minimal Quotient Game: Step-by-Step 128-Switch Colored Series Circuit &amp; Color-Fiber Bisection (V* = 737/129)
+</text>
+<rect x="20" y="66" width="1000" height="162" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="34" y="86" font-family="Helvetica, Arial, sans-serif" font-size="12.2" font-weight="bold" fill="#0f172a">STEP 1: The 128-Switch Series Circuit, Periodic Color Map c(k) = PERIODIC[k mod 8], &amp; Censoring Frontier k*</text>
+<text x="34" y="102" font-family="monospace" font-size="9.0" fill="#475569">Current flows left-to-right (k = 0 → 127) and halts at the FIRST Open switch k* = min{k : s_k = 0}, masking all downstream faults!</text>
+<rect x="32" y="120" width="64" height="46" rx="5" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>
+<text x="64" y="140" font-family="monospace" font-size="9.0" font-weight="bold" fill="#fde047" text-anchor="middle">POWER</text>
+<text x="64" y="154" font-family="monospace" font-size="8.0" fill="#ffffff" text-anchor="middle">Source</text>
+<line x1="96" y1="143" x2="114" y2="143" stroke="#f59e0b" stroke-width="3"/>
+<rect x="114" y="114" width="78" height="60" rx="5" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+<rect x="114" y="114" width="78" height="16" rx="4" fill="#ef4444"/>
+<text x="153.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=0 (C1:RED)</text>
+<line x1="124" y1="148" x2="182" y2="148" stroke="#16a34a" stroke-width="2.8"/>
+<circle cx="128" cy="148" r="3" fill="#16a34a"/>
+<circle cx="178" cy="148" r="3" fill="#16a34a"/>
+<text x="153.0" y="166" font-family="monospace" font-size="7.8" font-weight="bold" fill="#15803d" text-anchor="middle">s₀=1 (LIVE)</text>
+<line x1="192" y1="143" x2="202" y2="143" stroke="#f59e0b" stroke-width="3"/>
+<rect x="202" y="114" width="78" height="60" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="2.6"/>
+<rect x="202" y="114" width="78" height="16" rx="4" fill="#2563eb"/>
+<text x="241.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=1 (C2:BLUE)</text>
+<line x1="212" y1="150" x2="228" y2="150" stroke="#dc2626" stroke-width="2.5"/>
+<line x1="228" y1="150" x2="252" y2="137" stroke="#dc2626" stroke-width="2.5"/>
+<circle cx="228" cy="150" r="3" fill="#dc2626"/>
+<circle cx="256" cy="150" r="3" fill="#dc2626"/>
+<text x="241.0" y="166" font-family="monospace" font-size="7.8" font-weight="bold" fill="#dc2626" text-anchor="middle">s₁=0 (OPEN k*!)</text>
+<line x1="280" y1="143" x2="290" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="290" y="114" width="78" height="60" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+<rect x="290" y="114" width="78" height="16" rx="4" fill="#d97706"/>
+<text x="329.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=2 (C3:AMBER)</text>
+<line x1="302" y1="148" x2="356" y2="148" stroke="#64748b" stroke-width="2"/>
+<text x="329.0" y="166" font-family="monospace" font-size="7.4" fill="#64748b" text-anchor="middle">s_2=1 (No Curr)</text>
+<line x1="368" y1="143" x2="378" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="378" y="114" width="78" height="60" rx="5" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5"/>
+<rect x="378" y="114" width="78" height="16" rx="4" fill="#0891b2"/>
+<text x="417.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=3 (C4:CYAN)</text>
+<line x1="390" y1="148" x2="444" y2="148" stroke="#64748b" stroke-width="2"/>
+<text x="417.0" y="166" font-family="monospace" font-size="7.4" fill="#64748b" text-anchor="middle">s_3=1 (No Curr)</text>
+<line x1="456" y1="143" x2="466" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="466" y="114" width="78" height="60" rx="5" fill="#faf5ff" stroke="#9333ea" stroke-width="1.5"/>
+<rect x="466" y="114" width="78" height="16" rx="4" fill="#9333ea"/>
+<text x="505.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=4 (C5:VIOLET)</text>
+<line x1="478" y1="148" x2="532" y2="148" stroke="#64748b" stroke-width="2"/>
+<text x="505.0" y="166" font-family="monospace" font-size="7.4" fill="#64748b" text-anchor="middle">s_4=1 (No Curr)</text>
+<line x1="544" y1="143" x2="554" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="554" y="114" width="78" height="60" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+<rect x="554" y="114" width="78" height="16" rx="4" fill="#d97706"/>
+<text x="593.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=5 (C3:AMBER)</text>
+<line x1="566" y1="148" x2="620" y2="148" stroke="#64748b" stroke-width="2"/>
+<text x="593.0" y="166" font-family="monospace" font-size="7.4" fill="#64748b" text-anchor="middle">s_5=1 (No Curr)</text>
+<line x1="632" y1="143" x2="642" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="642" y="114" width="78" height="60" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+<rect x="642" y="114" width="78" height="16" rx="4" fill="#2563eb"/>
+<text x="681.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=6 (C2:BLUE)</text>
+<line x1="654" y1="148" x2="708" y2="148" stroke="#64748b" stroke-width="2"/>
+<text x="681.0" y="166" font-family="monospace" font-size="7.4" fill="#64748b" text-anchor="middle">s_6=1 (No Curr)</text>
+<line x1="720" y1="143" x2="730" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="730" y="114" width="78" height="60" rx="5" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+<rect x="730" y="114" width="78" height="16" rx="4" fill="#ef4444"/>
+<text x="769.0" y="125.5" font-family="monospace" font-size="8.0" font-weight="bold" fill="#ffffff" text-anchor="middle">k=7 (C1:RED)</text>
+<line x1="742" y1="148" x2="796" y2="148" stroke="#64748b" stroke-width="2"/>
+<text x="769.0" y="166" font-family="monospace" font-size="7.4" fill="#64748b" text-anchor="middle">s_7=1 (No Curr)</text>
+<line x1="808" y1="143" x2="828" y2="143" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/>
+<rect x="828" y="114" width="176" height="60" rx="5" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+<text x="916" y="132" font-family="monospace" font-size="8.6" font-weight="bold" fill="#f8fafc" text-anchor="middle">Blocks i = 1 .. 15 (k=8..127)</text>
+<text x="916" y="147" font-family="monospace" font-size="7.8" fill="#cbd5e1" text-anchor="middle">Same 8-color pattern × 16 blocks</text>
+<text x="916" y="162" font-family="monospace" font-size="7.8" font-weight="bold" fill="#f87171" text-anchor="middle">Masked: k=24, 59, 93, 126 = 0!</text>
+<rect x="32" y="184" width="972" height="34" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="44" y="198" font-family="monospace" font-size="8.5" font-weight="bold" fill="#0f172a">• Kronecker Color Partition (128 switches = 16 blocks × 8):  C1_RED: m∈{0,7} (32) | C2_BLUE: m∈{1,6} (32) | C3_AMBER: m∈{2,5} (32) | C4_CYAN: m=3 (16) | C5_VIOLET: m=4 (16)</text>
+<text x="44" y="211" font-family="monospace" font-size="8.4" fill="#dc2626">• Censoring &amp; Aliasing Law: probe(127) sees current halt at k*=1 and returns ONLY its color FAIL(C2_BLUE) — aliasing k*=1 with all 32 Blue switches!</text>
+<rect x="20" y="240" width="485" height="205" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="34" y="260" font-family="Helvetica, Arial, sans-serif" font-size="12.0" font-weight="bold" fill="#0f172a">STEP 2: The 3 Oracle Operations &amp; In-Band Lockout Hazard</text>
+<rect x="32" y="270" width="461" height="48" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+<text x="42" y="285" font-family="monospace" font-size="9.0" font-weight="bold" fill="#0f172a">1. probe(m)  [Prefix Continuity + Fault Color Oracle]</text>
+<text x="42" y="300" font-family="monospace" font-size="8.0" fill="#1e293b">• If k* > m (switches 0..m all closed): returns PASS (0).</text>
+<text x="42" y="312" font-family="monospace" font-size="8.0" font-weight="bold" fill="#334155">• If k* ≤ m (halted in 0..m): returns FAIL(c(k*)) ∈ {C1..C5} (hides k*!).</text>
+<rect x="32" y="324" width="461" height="48" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+<text x="42" y="339" font-family="monospace" font-size="9.0" font-weight="bold" fill="#0f172a">2. inspect(k)  [Local Switch Readout Subject to Current Flow]</text>
+<text x="42" y="354" font-family="monospace" font-size="8.0" fill="#1e293b">• If k ≤ k* (current reaches switch k): returns exact state s_k ∈ {0, 1}.</text>
+<text x="42" y="366" font-family="monospace" font-size="8.0" font-weight="bold" fill="#334155">• If k > k* (upstream switch k* is open): returns UNREACHABLE!</text>
+<rect x="32" y="378" width="461" height="48" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+<text x="42" y="393" font-family="monospace" font-size="9.0" font-weight="bold" fill="#0f172a">3. toggle(k)  [State-Flipping Intervention: s_k ← 1 - s_k]</text>
+<text x="42" y="408" font-family="monospace" font-size="8.0" fill="#1e293b">• If s_k == 0 (Open): flips 0 → 1 (Fixed!). Advances frontier L ← k + 1.</text>
+<text x="42" y="420" font-family="monospace" font-size="8.0" font-weight="bold" fill="#dc2626">• If s_k == 1 (Closed): flips 1 → 0 (BREAKS WORKING SWITCH! Cuts power to >k).</text>
+<rect x="520" y="240" width="500" height="205" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="534" y="260" font-family="Helvetica, Arial, sans-serif" font-size="12.0" font-weight="bold" fill="#0f172a">STEP 3: Worked Trace — How Color Projection Cuts Probes in Half</text>
+<rect x="532" y="270" width="476" height="82" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+<text x="542" y="285" font-family="Helvetica, Arial, sans-serif" font-size="9.5" font-weight="bold" fill="#1e3a8a">Wave 1 (L₀ = 0): Isolating First Open Switch k₁* = 1 via Blue Fiber F(C2_BLUE, 0)</text>
+<text x="542" y="299.0" font-family="monospace" font-size="7.8" fill="#1e293b">1. E2E Check : probe(127) → FAIL(C2_BLUE). Projects 128 switches onto 32 Blue switches:</text>
+<text x="542" y="309.5" font-family="monospace" font-size="7.8" fill="#1e293b">   F(C2_BLUE, 0) = [1, 6, 9, 14, 17, 22, ..., 62, 65, ..., 126]  (|F| = 32 candidates).</text>
+<text x="542" y="320.0" font-family="monospace" font-size="7.8" fill="#1e293b">2. Fiber Bisect (5 probes): probe(fiber[15]=62)→FAIL | probe(fiber[7]=30)→FAIL |</text>
+<text x="542" y="330.5" font-family="monospace" font-size="7.8" fill="#1e293b">   probe(fiber[3]=14)→FAIL | probe(fiber[1]=6)→FAIL | probe(fiber[0]=1)→FAIL!</text>
+<text x="542" y="341.0" font-family="monospace" font-size="7.8" fill="#1e293b">3. Verify &amp; Fix: Unique Blue candidate is k*=1! inspect(1)→0 → toggle(1)→1! (L₁ ← 2)</text>
+<rect x="532" y="358" width="476" height="76" rx="4" fill="#ecfeff" stroke="#0891b2" stroke-width="1.4"/>
+<text x="542" y="373" font-family="Helvetica, Arial, sans-serif" font-size="9.5" font-weight="bold" fill="#155e75">Wave 3 (After fixing k₂*=24, so L₂ = 25): Isolating k₃* = 59 via Cyan Fiber F(C4_CYAN, 25)</text>
+<text x="542" y="387.0" font-family="monospace" font-size="7.5" fill="#1e293b">1. E2E Check : probe(127) → FAIL(C4_CYAN). Since C4_CYAN only occurs at m = k mod 8 == 3,</text>
+<text x="542" y="398.0" font-family="monospace" font-size="7.5" fill="#1e293b">   suffix [25..127] projects onto 13 switches: F = [27,35,43,51,59,67,75,83,91,99,107,115,123]!</text>
+<text x="542" y="409.0" font-family="monospace" font-size="7.5" fill="#1e293b">2. Fiber Bisect (4 probes): probe(fiber[6]=75)→FAIL | probe(fiber[2]=43)→PASS (L←44) |</text>
+<text x="542" y="420.0" font-family="monospace" font-size="7.5" fill="#1e293b">   probe(fiber[4]=59)→FAIL | probe(fiber[3]=51)→PASS ⟹ Isolated k₃*=59! inspect(59)→0, toggle(59)→1!</text>
+<rect x="20" y="457" width="1000" height="188" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="520" y="478" font-family="Helvetica, Arial, sans-serif" font-size="12.2" font-weight="bold" fill="#0f172a" text-anchor="middle">STEP 4: Complete 5-Wave Trajectory Comparison on adversarial5 (k* ∈ {1, 24, 59, 93, 126})</text>
+<rect x="34" y="488" width="972" height="24" rx="4" fill="#1e293b"/>
+<text x="40" y="504" font-family="Helvetica, Arial, sans-serif" font-size="8.7" font-weight="bold" fill="#ffffff">Wave &amp; True Open Switch k*</text>
+<text x="198" y="504" font-family="Helvetica, Arial, sans-serif" font-size="8.7" font-weight="bold" fill="#ffffff">Active Suffix [L_t..127]</text>
+<text x="338" y="504" font-family="Helvetica, Arial, sans-serif" font-size="8.7" font-weight="bold" fill="#ffffff">Stage-Agnostic Bisection (Π)</text>
+<text x="560" y="504" font-family="Helvetica, Arial, sans-serif" font-size="8.7" font-weight="bold" fill="#ffffff">Observed Color &amp; Active Fiber F(c, L_t)</text>
+<text x="782" y="504" font-family="Helvetica, Arial, sans-serif" font-size="8.7" font-weight="bold" fill="#ffffff">Joint Color-Fiber Bisection (O⁻¹+Π)</text>
+<rect x="34" y="513" width="972" height="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.6"/>
+<text x="40" y="526.5" font-family="monospace" font-size="7.7" font-weight="bold" fill="#0f172a">Wave 1: k₁* = 1 (m=1)</text>
+<text x="198" y="526.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#475569">[0 .. 128] (129 states)</text>
+<text x="338" y="526.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#1e3a8a">7 probes: 63→31→15→7→3→1→0</text>
+<text x="560" y="526.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#b45309">C2_BLUE (m∈{1,6}): |F| = 32 switches</text>
+<text x="782" y="526.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#166534">1 E2E + 5 fiber (62→30→14→6→1) = 6</text>
+<rect x="34" y="534" width="972" height="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.6"/>
+<text x="40" y="547.5" font-family="monospace" font-size="7.7" font-weight="bold" fill="#0f172a">Wave 2: k₂* = 24 (m=0)</text>
+<text x="198" y="547.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#475569">[2 .. 127] (126 states)</text>
+<text x="338" y="547.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#1e3a8a">1 E2E + 7 probes (64→32→..→24) = 8</text>
+<text x="560" y="547.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#b45309">C1_RED (m∈{0,7}): |F| = 31 switches</text>
+<text x="782" y="547.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#166534">1 E2E + 5 fiber (63→31→15→23→24) = 6</text>
+<rect x="34" y="555" width="972" height="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.6"/>
+<text x="40" y="568.5" font-family="monospace" font-size="7.7" font-weight="bold" fill="#0f172a">Wave 3: k₃* = 59 (m=3)</text>
+<text x="198" y="568.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#475569">[25 .. 127] (103 states)</text>
+<text x="338" y="568.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#1e3a8a">1 E2E + 7 probes (76→50→..→59) = 8</text>
+<text x="560" y="568.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#b45309">C4_CYAN (m==3): |F| = 13 switches</text>
+<text x="782" y="568.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#166534">1 E2E + 4 fiber (75→43→59→51) = 5</text>
+<rect x="34" y="576" width="972" height="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.6"/>
+<text x="40" y="589.5" font-family="monospace" font-size="7.7" font-weight="bold" fill="#0f172a">Wave 4: k₄* = 93 (m=5)</text>
+<text x="198" y="589.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#475569">[60 .. 127] (68 states)</text>
+<text x="338" y="589.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#1e3a8a">1 E2E + 6 probes (93→76→..→92) = 7</text>
+<text x="560" y="589.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#b45309">C3_AMBER (m∈{2,5}): |F| = 17 switches</text>
+<text x="782" y="589.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#166534">1 E2E + 4 fiber (93→74→85→90) = 5</text>
+<rect x="34" y="597" width="972" height="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.6"/>
+<text x="40" y="610.5" font-family="monospace" font-size="7.7" font-weight="bold" fill="#0f172a">Wave 5: k₅* = 126 (m=6)</text>
+<text x="198" y="610.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#475569">[94 .. 127] (34 states)</text>
+<text x="338" y="610.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#1e3a8a">1 E2E + 6 probes (110→..→126) = 7</text>
+<text x="560" y="610.5" font-family="monospace" font-size="7.5" font-weight="normal" fill="#b45309">C2_BLUE (m∈{1,6}): |F| = 9 switches</text>
+<text x="782" y="610.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#166534">1 E2E + 4 fiber (110→118→121→126) = 5</text>
+<rect x="34" y="618" width="972" height="20" fill="#f0fdf4" stroke="#cbd5e1" stroke-width="1.4"/>
+<text x="40" y="631.5" font-family="monospace" font-size="7.7" font-weight="bold" fill="#0f172a">Final Check + Total</text>
+<text x="198" y="631.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#475569">L₅ = 127 → All Closed!</text>
+<text x="338" y="631.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#1e3a8a">1 E2E check → 38 Total (0 wrong)</text>
+<text x="560" y="631.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#b45309">probe(127) → PASS_ALL_CLOSED (0)</text>
+<text x="782" y="631.5" font-family="monospace" font-size="7.5" font-weight="bold" fill="#166534">1 E2E check → 28 Total (22 fiber + 6 E2E)!</text>
+</svg>

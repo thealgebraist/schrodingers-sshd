@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 630" width="1040" height="630">
+<defs>
+  <linearGradient id="bg9" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#f1f5f9"/>
+  </linearGradient>
+  <marker id="arrRed9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
+  </marker>
+  <marker id="arrGreen9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#16a34a"/>
+  </marker>
+</defs>
+<rect width="1040" height="630" rx="10" fill="url(#bg9)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="16" width="1000" height="44" rx="6" fill="#0f172a"/>
+<text x="520" y="43" font-family="Helvetica, Arial, sans-serif" font-size="14.8" font-weight="bold" fill="#ffffff" text-anchor="middle">
+Production Economics: Token API Costs (Low vs. Ultra) &amp; Worst-Case Infrastructure Outage Cost vs. Specialized C99
+</text>
+<rect x="20" y="72" width="490" height="275" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="265" y="94" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="bold" fill="#0f172a" text-anchor="middle">A. Token Usage, Probe Delay &amp; Collateral Risk by Agent Tier</text>
+<text x="265" y="110" font-family="monospace" font-size="9.0" fill="#475569" text-anchor="middle">Why Cheap/Low-Effort LLMs Are a False Economy in Cascaded Infrastructure</text>
+<rect x="32" y="120" width="466" height="49" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+<text x="42" y="135" font-family="Helvetica, Arial, sans-serif" font-size="9.8" font-weight="bold" fill="#dc2626">1. Low-Setting / Unverified Manual LLM (Run 0a)</text>
+<text x="42" y="150" font-family="monospace" font-size="8.3" fill="#1e293b">~180k–310k tok ($0.15–$0.45) | 26 probes | 3 BLIND REPAIRS (k=22,26)</text>
+<text x="42" y="163" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#0f172a">Result: CATASTROPHIC LOCKOUT on bst-core-rtr01 -> $540,000+ SLA Outage!</text>
+<rect x="32" y="175" width="466" height="49" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+<text x="42" y="190" font-family="Helvetica, Arial, sans-serif" font-size="9.8" font-weight="bold" fill="#d97706">2. Low/Standard-Setting HTTP Loops (clean2)</text>
+<text x="42" y="205" font-family="monospace" font-size="8.3" fill="#1e293b">~420k–580k tok ($0.85–$2.10) | 69 probes + 6 runs (3.45× extra probes)</text>
+<text x="42" y="218" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#0f172a">Result: 0 wrong repairs, but 49 wasted network probes extend MTTR delay!</text>
+<rect x="32" y="230" width="466" height="49" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="42" y="245" font-family="Helvetica, Arial, sans-serif" font-size="9.8" font-weight="bold" fill="#2563eb">3. Highest-Setting gpt-6-astra ultra (clean3 / clean4)</text>
+<text x="42" y="260" font-family="monospace" font-size="8.3" fill="#1e293b">1.61M–1.89M tok ($3.30–$14.50, 43 PFLOPs) | 19–20 probes | 0 wrong</text>
+<text x="42" y="273" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#0f172a">Result: Discovers O⁻¹∩Π math! Zero wrong repairs, but 4.2–5.3 min compute.</text>
+<rect x="32" y="285" width="466" height="49" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="42" y="300" font-family="Helvetica, Arial, sans-serif" font-size="9.8" font-weight="bold" fill="#16a34a">4. Specialized C99 / C++23 Joint Solver (O⁻¹ + Π)</text>
+<text x="42" y="315" font-family="monospace" font-size="8.3" fill="#1e293b">0 tokens ($4.0×10⁻¹³, 152 int ops, 1.8 μs) | 22 fiber + 6 E2E | 0 wrong</text>
+<text x="42" y="328" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#0f172a">Result: Deterministic 0% collateral risk + 14.4 s total network probe time!</text>
+<rect x="525" y="72" width="495" height="275" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="772" y="94" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="bold" fill="#991b1b" text-anchor="middle">B. Concrete Worst-Case Server Outage: Run 0a Collateral Cascade</text>
+<text x="772" y="110" font-family="monospace" font-size="9.0" fill="#475569" text-anchor="middle">How Saving $3 in LLM Tokens Causes a 3.5-Hour Tier-1 Bastion Blackout</text>
+<rect x="537" y="120" width="471" height="41" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="1.4"/>
+<text x="546" y="136" font-family="Helvetica, Arial, sans-serif" font-size="9.3" font-weight="bold" fill="#0f172a">t = 00:00 | Initial Incident: 5 Masked Faults Across 16-Hop SCADA Chain</text>
+<text x="546" y="152" font-family="monospace" font-size="7.7" fill="#334155">True faults: k* ∈ {1 (S0), 24 (S3), 59 (S7), 93 (S11), 126 (S15)}. Hop 2 is 100% HEALTHY.</text>
+<rect x="537" y="166" width="471" height="41" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+<text x="546" y="182" font-family="Helvetica, Arial, sans-serif" font-size="9.3" font-weight="bold" fill="#0f172a">t = 01:15 | Bracket-Inversion Slip on `probe 23 -> PASS_1` → Blind `repair 22`!</text>
+<text x="546" y="198" font-family="monospace" font-size="7.7" fill="#334155">Agent misreads PASS_1 at k=23, skips `inspect`, and breaks k=22 (bst-core-rtr01 authorized_keys).</text>
+<rect x="537" y="212" width="471" height="41" rx="4" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+<text x="546" y="228" font-family="Helvetica, Arial, sans-serif" font-size="9.3" font-weight="bold" fill="#0f172a">t = 01:40 | Second Blind Mutation `repair 26` (S3:2 DNS) → Total Lockout!</text>
+<text x="546" y="244" font-family="monospace" font-size="7.7" fill="#334155">Core router bst-core-rtr01 (Hop 2) now rejects ALL SSH keys (O₂), severing Hops 3..15!</text>
+<rect x="537" y="258" width="471" height="41" rx="4" fill="#450a0a" stroke="#f87171" stroke-width="1.4"/>
+<text x="546" y="274" font-family="Helvetica, Arial, sans-serif" font-size="9.3" font-weight="bold" fill="#ffffff">t = 01:40 – 03:45 | Out-of-Band IPMI/iDRAC Console &amp; Data-Center Recovery</text>
+<text x="546" y="290" font-family="monospace" font-size="7.7" fill="#fecaca">SSH dead! SREs must mount ISO via BMC/iDRAC on Hop 2 &amp; 3, then bisect Hops 7, 11, 15.</text>
+<rect x="537" y="305" width="471" height="32" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+<text x="772" y="319" font-family="Helvetica, Arial, sans-serif" font-size="9.2" font-weight="bold" fill="#854d0e" text-anchor="middle">Unbisected Heuristic Policy (α=0.25): 99.98% Failure Rate (48.1 Wrong Edits → 28 Broken Hops!)</text>
+<text x="772" y="332" font-family="monospace" font-size="7.8" fill="#713f12" text-anchor="middle">Expected Hitting Time E[τ₀] ≈ 1.4 × 10²³ steps (Permanent Data-Center Configuration Corruption)</text>
+<rect x="20" y="360" width="1000" height="254" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="520" y="382" font-family="Helvetica, Arial, sans-serif" font-size="12.5" font-weight="bold" fill="#0f172a" text-anchor="middle">C. Total Economic Impact Per Incident: API Token Cost + Network Delay + Server Downtime SLA ($9,000/min Tier-1 Outage)</text>
+<rect x="34" y="394" width="972" height="25" rx="4" fill="#1e293b"/>
+<text x="42" y="410" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#ffffff">Economic / Operational Metric</text>
+<text x="228" y="410" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#ffffff">1. Unbisected LLM (α=0.25)</text>
+<text x="418" y="410" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#ffffff">2. Low/Manual (Run 0a)</text>
+<text x="595" y="410" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#ffffff">3. Low HTTP (clean2)</text>
+<text x="752" y="410" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#ffffff">4. Astra Ultra (clean3/4)</text>
+<text x="898" y="410" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#ffffff">5. Optimal C99 Solver</text>
+<rect x="34" y="420" width="972" height="25" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.7"/>
+<text x="42" y="436" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">LLM Token Usage</text>
+<text x="228" y="436" font-family="monospace" font-size="8.0" font-weight="normal" fill="#991b1b">~1.2M tok (50 turns)</text>
+<text x="418" y="436" font-family="monospace" font-size="8.0" font-weight="normal" fill="#dc2626">~240k tok (manual)</text>
+<text x="595" y="436" font-family="monospace" font-size="8.0" font-weight="normal" fill="#b45309">~480k tok (35 turns)</text>
+<text x="752" y="436" font-family="monospace" font-size="8.0" font-weight="normal" fill="#1e3a8a">1.61M – 1.89M tok</text>
+<text x="898" y="436" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">0 tokens (32 B RAM)</text>
+<rect x="34" y="446" width="972" height="25" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.7"/>
+<text x="42" y="462" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">Direct Compute / API Cost</text>
+<text x="228" y="462" font-family="monospace" font-size="8.0" font-weight="normal" fill="#991b1b">$1.80 – $4.50</text>
+<text x="418" y="462" font-family="monospace" font-size="8.0" font-weight="normal" fill="#dc2626">$0.25 – $0.45</text>
+<text x="595" y="462" font-family="monospace" font-size="8.0" font-weight="normal" fill="#b45309">$0.85 – $2.10</text>
+<text x="752" y="462" font-family="monospace" font-size="8.0" font-weight="normal" fill="#1e3a8a">$3.30 – $14.50</text>
+<text x="898" y="462" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">$4.0 × 10⁻¹³ (CPU)</text>
+<rect x="34" y="472" width="972" height="25" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.7"/>
+<text x="42" y="488" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">Probes + E2E / Wrong Edits</text>
+<text x="228" y="488" font-family="monospace" font-size="8.0" font-weight="normal" fill="#991b1b">50 probes / 48.1 WRONG</text>
+<text x="418" y="488" font-family="monospace" font-size="8.0" font-weight="normal" fill="#dc2626">26 probes / 3 WRONG</text>
+<text x="595" y="488" font-family="monospace" font-size="8.0" font-weight="normal" fill="#b45309">69 probes + 6 E2E / 0</text>
+<text x="752" y="488" font-family="monospace" font-size="8.0" font-weight="normal" fill="#1e3a8a">19–20 prb + 2–6 E2E / 0</text>
+<text x="898" y="488" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">22 prb + 6 E2E / 0</text>
+<rect x="34" y="498" width="972" height="25" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.7"/>
+<text x="42" y="514" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">Wall-Clock MTTR (Solve+Net)</text>
+<text x="228" y="514" font-family="monospace" font-size="8.0" font-weight="normal" fill="#991b1b">∞ (4–8 hr full rebuild)</text>
+<text x="418" y="514" font-family="monospace" font-size="8.0" font-weight="normal" fill="#dc2626">~65 min (IPMI + reset)</text>
+<text x="595" y="514" font-family="monospace" font-size="8.0" font-weight="normal" fill="#b45309">~2.8 min (168 s)</text>
+<text x="752" y="514" font-family="monospace" font-size="8.0" font-weight="normal" fill="#1e3a8a">~4.6 min (275 s)</text>
+<text x="898" y="514" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">14.4 sec (0.24 min)</text>
+<rect x="34" y="524" width="972" height="25" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.7"/>
+<text x="42" y="540" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">SLA Outage Cost ($9k/min)</text>
+<text x="228" y="540" font-family="monospace" font-size="8.0" font-weight="normal" fill="#991b1b">$2,160,000 – $4,320,000</text>
+<text x="418" y="540" font-family="monospace" font-size="8.0" font-weight="normal" fill="#dc2626">$585,000 (Bastion Lock)</text>
+<text x="595" y="540" font-family="monospace" font-size="8.0" font-weight="normal" fill="#b45309">$25,200 (MTTR delay)</text>
+<text x="752" y="540" font-family="monospace" font-size="8.0" font-weight="normal" fill="#1e3a8a">$41,250 (LLM think)</text>
+<text x="898" y="540" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">$2,160 (Network RTT)</text>
+<rect x="34" y="550" width="972" height="25" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.7"/>
+<text x="42" y="566" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">SRE Emergency Labor Cost</text>
+<text x="228" y="566" font-family="monospace" font-size="8.0" font-weight="normal" fill="#991b1b">$18,000 (12 eng × 6 hr)</text>
+<text x="418" y="566" font-family="monospace" font-size="8.0" font-weight="normal" fill="#dc2626">$2,400 (4 eng × 2 hr)</text>
+<text x="595" y="566" font-family="monospace" font-size="8.0" font-weight="normal" fill="#b45309">$0 (Automated)</text>
+<text x="752" y="566" font-family="monospace" font-size="8.0" font-weight="normal" fill="#1e3a8a">$0 (Automated)</text>
+<text x="898" y="566" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">$0 (Automated)</text>
+<rect x="34" y="576" width="972" height="25" fill="#fef2f2" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="42" y="592" font-family="Helvetica, Arial, sans-serif" font-size="8.8" font-weight="bold" fill="#0f172a">TOTAL COST PER INCIDENT</text>
+<text x="228" y="592" font-family="monospace" font-size="8.0" font-weight="bold" fill="#991b1b">$2,178,004+</text>
+<text x="418" y="592" font-family="monospace" font-size="8.0" font-weight="bold" fill="#dc2626">$587,400.35</text>
+<text x="595" y="592" font-family="monospace" font-size="8.0" font-weight="bold" fill="#b45309">$25,201.45</text>
+<text x="752" y="592" font-family="monospace" font-size="8.0" font-weight="bold" fill="#1e3a8a">$41,258.90</text>
+<text x="898" y="592" font-family="monospace" font-size="8.0" font-weight="bold" fill="#166534">$2,160.00 (Lowest!)</text>
+</svg>

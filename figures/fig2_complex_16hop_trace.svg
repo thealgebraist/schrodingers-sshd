@@ -1,0 +1,268 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 740" width="1040" height="740">
+<defs>
+  <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#eef2f6"/>
+  </linearGradient>
+</defs>
+<rect width="1040" height="740" rx="10" fill="url(#bg2)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="16" width="1000" height="50" rx="6" fill="#0f172a"/>
+<text x="520" y="38" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">
+COMPLEX 16-HOP SSH INSTANCE (D=128 Stages, W=129 States, K=5 Masked Faults at k* ∈ {1, 24, 59, 93, 126})
+</text>
+<text x="520" y="56" font-family="monospace" font-size="12" fill="#93c5fd" text-anchor="middle">
+Complete 38-Probe Step-by-Step Bellman Interval Contraction [L_t, R_t] &amp; Monotonic Verified Prefix Progression
+</text>
+<rect x="20" y="80" width="1000" height="120" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="32" y="99" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#dc2626">EPISODE 1: Localize Fault #1 at k₁* = 1 (Hop 0: KEY_DECRYPTED_IN_AGENT)</text>
+<text x="32" y="114" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#475569">Aliased End-to-End Symptom: OBS_TIMEOUT_OR_TTY_HANG (48 aliased states)</text>
+<line x1="490.0" y1="118" x2="490.0" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="490.0" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=0</text>
+<line x1="553.125" y1="118" x2="553.125" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="553.125" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=16</text>
+<line x1="616.25" y1="118" x2="616.25" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="616.25" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=32</text>
+<line x1="679.375" y1="118" x2="679.375" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="679.375" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=48</text>
+<line x1="742.5" y1="118" x2="742.5" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="742.5" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=64</text>
+<line x1="805.625" y1="118" x2="805.625" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="805.625" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=80</text>
+<line x1="868.75" y1="118" x2="868.75" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="868.75" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=96</text>
+<line x1="931.875" y1="118" x2="931.875" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="931.875" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=112</text>
+<line x1="995.0" y1="118" x2="995.0" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+<text x="995.0" y="115" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=128</text>
+<text x="32" y="132" font-family="monospace" font-size="9" fill="#1e293b">1.[  0..128] <tspan font-weight="bold" fill="#dc2626">W=129 → Π₆₃=0</tspan></text>
+<rect x="490.0" y="122.0" width="505.0" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="738.5546875" cy="125.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="148" font-family="monospace" font-size="9" fill="#1e293b">2.[  0.. 63] <tspan font-weight="bold" fill="#dc2626">W=64 → Π₃₁=0</tspan></text>
+<rect x="490.0" y="131.2" width="248.5546875" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="612.3046875" cy="134.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="164" font-family="monospace" font-size="9" fill="#1e293b">3.[  0.. 31] <tspan font-weight="bold" fill="#dc2626">W=32 → Π₁₅=0</tspan></text>
+<rect x="490.0" y="140.4" width="122.3046875" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="549.1796875" cy="143.4" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="180" font-family="monospace" font-size="9" fill="#1e293b">4.[  0.. 15] <tspan font-weight="bold" fill="#dc2626">W=16 → Π₇=0</tspan></text>
+<rect x="490.0" y="149.6" width="59.1796875" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="517.6171875" cy="152.6" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="132" font-family="monospace" font-size="9" fill="#1e293b">5.[  0..  7] <tspan font-weight="bold" fill="#dc2626">W=8 → Π₃=0</tspan></text>
+<rect x="490.0" y="158.8" width="27.6171875" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="501.8359375" cy="161.8" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="148" font-family="monospace" font-size="9" fill="#1e293b">6.[  0..  3] <tspan font-weight="bold" fill="#dc2626">W=4 → Π₁=0</tspan></text>
+<rect x="490.0" y="168.0" width="11.8359375" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="493.9453125" cy="171.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="164" font-family="monospace" font-size="9" fill="#1e293b">7.[  0..  1] <tspan font-weight="bold" fill="#16a34a">W=2 → Π₀=1</tspan></text>
+<rect x="490.0" y="177.2" width="4.0" height="6" rx="1.5" fill="#dc2626" opacity="0.85"/>
+<circle cx="490.0" cy="180.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="180" font-family="monospace" font-size="9" fill="#1e293b">8.[  1..  1] <tspan font-weight="bold" fill="#16a34a">k₁*=1 (H=0) → Repair s₁←1, L←2</tspan></text>
+<rect x="490.0" y="186.39999999999998" width="3.9453125" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="493.9453125" y="186.39999999999998" width="4.0" height="6" rx="1.5" fill="#16a34a" opacity="0.85"/>
+<rect x="20" y="208" width="1000" height="120" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="32" y="227" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#ea580c">EPISODE 2: Localize Fault #2 at k₂* = 24 (Hop 3: AGENT_SOCK_IPC)</text>
+<text x="32" y="242" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#475569">Probe #8 (Π₁₂₇=0 FAIL) confirms hidden downstream fault; bisect unverified [2..127] (W=126):</text>
+<line x1="490.0" y1="246" x2="490.0" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="490.0" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=0</text>
+<line x1="553.125" y1="246" x2="553.125" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="553.125" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=16</text>
+<line x1="616.25" y1="246" x2="616.25" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="616.25" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=32</text>
+<line x1="679.375" y1="246" x2="679.375" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="679.375" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=48</text>
+<line x1="742.5" y1="246" x2="742.5" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="742.5" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=64</text>
+<line x1="805.625" y1="246" x2="805.625" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="805.625" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=80</text>
+<line x1="868.75" y1="246" x2="868.75" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="868.75" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=96</text>
+<line x1="931.875" y1="246" x2="931.875" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="931.875" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=112</text>
+<line x1="995.0" y1="246" x2="995.0" y2="322" stroke="#e2e8f0" stroke-width="1"/>
+<text x="995.0" y="243" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=128</text>
+<text x="32" y="260" font-family="monospace" font-size="9" fill="#1e293b">1.[  2..127] <tspan font-weight="bold" fill="#dc2626">W=126 → Π₆₄=0</tspan></text>
+<rect x="490.0" y="250.0" width="7.890625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="497.890625" y="250.0" width="493.1640625" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="742.5" cy="253.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="276" font-family="monospace" font-size="9" fill="#1e293b">2.[  2.. 64] <tspan font-weight="bold" fill="#dc2626">W=63 → Π₃₂=0</tspan></text>
+<rect x="490.0" y="259.2" width="7.890625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="497.890625" y="259.2" width="244.609375" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="616.25" cy="262.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="292" font-family="monospace" font-size="9" fill="#1e293b">3.[  2.. 32] <tspan font-weight="bold" fill="#16a34a">W=31 → Π₁₆=1</tspan></text>
+<rect x="490.0" y="268.4" width="7.890625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="497.890625" y="268.4" width="118.359375" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="553.125" cy="271.4" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="308" font-family="monospace" font-size="9" fill="#1e293b">4.[ 17.. 32] <tspan font-weight="bold" fill="#dc2626">W=16 → Π₂₄=0</tspan></text>
+<rect x="490.0" y="277.6" width="67.0703125" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="557.0703125" y="277.6" width="59.1796875" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="584.6875" cy="280.6" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="260" font-family="monospace" font-size="9" fill="#1e293b">5.[ 17.. 24] <tspan font-weight="bold" fill="#16a34a">W=8 → Π₂₀=1</tspan></text>
+<rect x="490.0" y="286.8" width="67.0703125" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="557.0703125" y="286.8" width="27.6171875" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="568.90625" cy="289.8" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="276" font-family="monospace" font-size="9" fill="#1e293b">6.[ 21.. 24] <tspan font-weight="bold" fill="#16a34a">W=4 → Π₂₂=1</tspan></text>
+<rect x="490.0" y="296.0" width="82.8515625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="572.8515625" y="296.0" width="11.8359375" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="576.796875" cy="299.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="292" font-family="monospace" font-size="9" fill="#1e293b">7.[ 23.. 24] <tspan font-weight="bold" fill="#16a34a">W=2 → Π₂₃=1</tspan></text>
+<rect x="490.0" y="305.2" width="90.7421875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="580.7421875" y="305.2" width="4.0" height="6" rx="1.5" fill="#ea580c" opacity="0.85"/>
+<circle cx="580.7421875" cy="308.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="308" font-family="monospace" font-size="9" fill="#1e293b">8.[ 24.. 24] <tspan font-weight="bold" fill="#16a34a">k₂*=24 (H=0) → Repair s₂₄←1, L←25</tspan></text>
+<rect x="490.0" y="314.4" width="94.6875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="584.6875" y="314.4" width="4.0" height="6" rx="1.5" fill="#16a34a" opacity="0.85"/>
+<rect x="20" y="336" width="1000" height="120" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="32" y="355" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#d97706">EPISODE 3: Localize Fault #3 at k₃* = 59 (Hop 7: TCP22_ROUTING_HANDSHAKE)</text>
+<text x="32" y="370" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#475569">Probe #16 (Π₁₂₇=0 FAIL) confirms hidden fault; bisect unverified [25..127] (W=103):</text>
+<line x1="490.0" y1="374" x2="490.0" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="490.0" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=0</text>
+<line x1="553.125" y1="374" x2="553.125" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="553.125" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=16</text>
+<line x1="616.25" y1="374" x2="616.25" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="616.25" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=32</text>
+<line x1="679.375" y1="374" x2="679.375" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="679.375" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=48</text>
+<line x1="742.5" y1="374" x2="742.5" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="742.5" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=64</text>
+<line x1="805.625" y1="374" x2="805.625" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="805.625" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=80</text>
+<line x1="868.75" y1="374" x2="868.75" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="868.75" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=96</text>
+<line x1="931.875" y1="374" x2="931.875" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="931.875" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=112</text>
+<line x1="995.0" y1="374" x2="995.0" y2="450" stroke="#e2e8f0" stroke-width="1"/>
+<text x="995.0" y="371" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=128</text>
+<text x="32" y="388" font-family="monospace" font-size="9" fill="#1e293b">1.[ 25..127] <tspan font-weight="bold" fill="#dc2626">W=103 → Π₇₅=0</tspan></text>
+<rect x="490.0" y="378.0" width="98.6328125" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="588.6328125" y="378.0" width="402.421875" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="785.8984375" cy="381.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="404" font-family="monospace" font-size="9" fill="#1e293b">2.[ 25.. 75] <tspan font-weight="bold" fill="#16a34a">W=51 → Π₄₉=1</tspan></text>
+<rect x="490.0" y="387.2" width="98.6328125" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="588.6328125" y="387.2" width="197.265625" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="683.3203125" cy="390.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="420" font-family="monospace" font-size="9" fill="#1e293b">3.[ 50.. 75] <tspan font-weight="bold" fill="#dc2626">W=26 → Π₆₂=0</tspan></text>
+<rect x="490.0" y="396.4" width="197.265625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="687.265625" y="396.4" width="98.6328125" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="734.609375" cy="399.4" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="436" font-family="monospace" font-size="9" fill="#1e293b">4.[ 50.. 62] <tspan font-weight="bold" fill="#16a34a">W=13 → Π₅₅=1</tspan></text>
+<rect x="490.0" y="405.6" width="197.265625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="687.265625" y="405.6" width="47.34375" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="706.9921875" cy="408.6" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="388" font-family="monospace" font-size="9" fill="#1e293b">5.[ 56.. 62] <tspan font-weight="bold" fill="#16a34a">W=7 → Π₅₈=1</tspan></text>
+<rect x="490.0" y="414.8" width="220.9375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="710.9375" y="414.8" width="23.671875" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="718.828125" cy="417.8" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="404" font-family="monospace" font-size="9" fill="#1e293b">6.[ 59.. 62] <tspan font-weight="bold" fill="#dc2626">W=4 → Π₆₀=0</tspan></text>
+<rect x="490.0" y="424.0" width="232.7734375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="722.7734375" y="424.0" width="11.8359375" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="726.71875" cy="427.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="420" font-family="monospace" font-size="9" fill="#1e293b">7.[ 59.. 60] <tspan font-weight="bold" fill="#dc2626">W=2 → Π₅₉=0</tspan></text>
+<rect x="490.0" y="433.2" width="232.7734375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="722.7734375" y="433.2" width="4.0" height="6" rx="1.5" fill="#d97706" opacity="0.85"/>
+<circle cx="722.7734375" cy="436.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="436" font-family="monospace" font-size="9" fill="#1e293b">8.[ 59.. 59] <tspan font-weight="bold" fill="#16a34a">k₃*=59 (H=0) → Repair s₅₉←1, L←60</tspan></text>
+<rect x="490.0" y="442.4" width="232.7734375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="722.7734375" y="442.4" width="4.0" height="6" rx="1.5" fill="#16a34a" opacity="0.85"/>
+<rect x="20" y="464" width="1000" height="120" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="32" y="483" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#7c3aed">EPISODE 4: Localize Fault #4 at k₄* = 93 (Hop 11: REMOTE_SSHD_ReverseDNS_CFG)</text>
+<text x="32" y="498" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#475569">Probe #24 (Π₁₂₇=0 FAIL) confirms hidden fault; bisect unverified [60..127] (W=68):</text>
+<line x1="490.0" y1="502" x2="490.0" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="490.0" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=0</text>
+<line x1="553.125" y1="502" x2="553.125" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="553.125" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=16</text>
+<line x1="616.25" y1="502" x2="616.25" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="616.25" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=32</text>
+<line x1="679.375" y1="502" x2="679.375" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="679.375" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=48</text>
+<line x1="742.5" y1="502" x2="742.5" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="742.5" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=64</text>
+<line x1="805.625" y1="502" x2="805.625" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="805.625" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=80</text>
+<line x1="868.75" y1="502" x2="868.75" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="868.75" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=96</text>
+<line x1="931.875" y1="502" x2="931.875" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="931.875" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=112</text>
+<line x1="995.0" y1="502" x2="995.0" y2="578" stroke="#e2e8f0" stroke-width="1"/>
+<text x="995.0" y="499" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=128</text>
+<text x="32" y="516" font-family="monospace" font-size="9" fill="#1e293b">1.[ 60..127] <tspan font-weight="bold" fill="#dc2626">W=68 → Π₉₃=0</tspan></text>
+<rect x="490.0" y="506.0" width="236.71875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="726.71875" y="506.0" width="264.3359375" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="856.9140625" cy="509.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="532" font-family="monospace" font-size="9" fill="#1e293b">2.[ 60.. 93] <tspan font-weight="bold" fill="#16a34a">W=34 → Π₇₆=1</tspan></text>
+<rect x="490.0" y="515.2" width="236.71875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="726.71875" y="515.2" width="130.1953125" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="789.84375" cy="518.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="548" font-family="monospace" font-size="9" fill="#1e293b">3.[ 77.. 93] <tspan font-weight="bold" fill="#16a34a">W=17 → Π₈₄=1</tspan></text>
+<rect x="490.0" y="524.4" width="303.7890625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="793.7890625" y="524.4" width="63.125" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="821.40625" cy="527.4" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="564" font-family="monospace" font-size="9" fill="#1e293b">4.[ 85.. 93] <tspan font-weight="bold" fill="#16a34a">W=9 → Π₈₈=1</tspan></text>
+<rect x="490.0" y="533.6" width="335.3515625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="825.3515625" y="533.6" width="31.5625" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="837.1875" cy="536.6" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="516" font-family="monospace" font-size="9" fill="#1e293b">5.[ 89.. 93] <tspan font-weight="bold" fill="#16a34a">W=5 → Π₉₀=1</tspan></text>
+<rect x="490.0" y="542.8" width="351.1328125" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="841.1328125" y="542.8" width="15.78125" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="845.078125" cy="545.8" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="532" font-family="monospace" font-size="9" fill="#1e293b">6.[ 91.. 93] <tspan font-weight="bold" fill="#16a34a">W=3 → Π₉₁=1</tspan></text>
+<rect x="490.0" y="552.0" width="359.0234375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="849.0234375" y="552.0" width="7.890625" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="849.0234375" cy="555.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="548" font-family="monospace" font-size="9" fill="#1e293b">7.[ 92.. 93] <tspan font-weight="bold" fill="#16a34a">W=2 → Π₉₂=1</tspan></text>
+<rect x="490.0" y="561.2" width="362.96875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="852.96875" y="561.2" width="4.0" height="6" rx="1.5" fill="#7c3aed" opacity="0.85"/>
+<circle cx="852.96875" cy="564.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="564" font-family="monospace" font-size="9" fill="#1e293b">8.[ 93.. 93] <tspan font-weight="bold" fill="#16a34a">k₄*=93 (H=0) → Repair s₉₃←1, L←94</tspan></text>
+<rect x="490.0" y="570.4" width="366.9140625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="856.9140625" y="570.4" width="4.0" height="6" rx="1.5" fill="#16a34a" opacity="0.85"/>
+<rect x="20" y="592" width="1000" height="120" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="32" y="611" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#0284c7">EPISODE 5: Localize Fault #5 at k₅* = 126 (Hop 15: AUTH_KEYS_PERMS_OR_PAM) &amp; Verify</text>
+<text x="32" y="626" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#475569">Probe #32 (Π₁₂₇=0 FAIL) confirms hidden fault; bisect [94..127] (W=34) + Final Probe #38 (Π₁₂₇=1 PASS):</text>
+<line x1="490.0" y1="630" x2="490.0" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="490.0" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=0</text>
+<line x1="553.125" y1="630" x2="553.125" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="553.125" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=16</text>
+<line x1="616.25" y1="630" x2="616.25" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="616.25" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=32</text>
+<line x1="679.375" y1="630" x2="679.375" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="679.375" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=48</text>
+<line x1="742.5" y1="630" x2="742.5" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="742.5" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=64</text>
+<line x1="805.625" y1="630" x2="805.625" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="805.625" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=80</text>
+<line x1="868.75" y1="630" x2="868.75" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="868.75" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=96</text>
+<line x1="931.875" y1="630" x2="931.875" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="931.875" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=112</text>
+<line x1="995.0" y1="630" x2="995.0" y2="706" stroke="#e2e8f0" stroke-width="1"/>
+<text x="995.0" y="627" font-family="monospace" font-size="8.5" fill="#64748b" text-anchor="middle">k=128</text>
+<text x="32" y="644" font-family="monospace" font-size="9" fill="#1e293b">1.[ 94..127] <tspan font-weight="bold" fill="#16a34a">W=34 → Π₁₁₀=1</tspan></text>
+<rect x="490.0" y="634.0" width="370.859375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="860.859375" y="634.0" width="130.1953125" height="6" rx="1.5" fill="#0284c7" opacity="0.85"/>
+<circle cx="923.984375" cy="637.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="660" font-family="monospace" font-size="9" fill="#1e293b">2.[111..127] <tspan font-weight="bold" fill="#16a34a">W=17 → Π₁₁₈=1</tspan></text>
+<rect x="490.0" y="643.2" width="437.9296875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="927.9296875" y="643.2" width="63.125" height="6" rx="1.5" fill="#0284c7" opacity="0.85"/>
+<circle cx="955.546875" cy="646.2" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="676" font-family="monospace" font-size="9" fill="#1e293b">3.[119..127] <tspan font-weight="bold" fill="#16a34a">W=9 → Π₁₂₂=1</tspan></text>
+<rect x="490.0" y="652.4" width="469.4921875" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="959.4921875" y="652.4" width="31.5625" height="6" rx="1.5" fill="#0284c7" opacity="0.85"/>
+<circle cx="971.328125" cy="655.4" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="32" y="692" font-family="monospace" font-size="9" fill="#1e293b">4.[123..127] <tspan font-weight="bold" fill="#16a34a">W=5 → Π₁₂₄=1</tspan></text>
+<rect x="490.0" y="661.6" width="485.2734375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="975.2734375" y="661.6" width="15.78125" height="6" rx="1.5" fill="#0284c7" opacity="0.85"/>
+<circle cx="979.21875" cy="664.6" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="644" font-family="monospace" font-size="9" fill="#1e293b">5.[125..127] <tspan font-weight="bold" fill="#16a34a">W=3 → Π₁₂₅=1</tspan></text>
+<rect x="490.0" y="670.8" width="493.1640625" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="983.1640625" y="670.8" width="7.890625" height="6" rx="1.5" fill="#0284c7" opacity="0.85"/>
+<circle cx="983.1640625" cy="673.8" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="660" font-family="monospace" font-size="9" fill="#1e293b">6.[126..127] <tspan font-weight="bold" fill="#dc2626">W=2 → Π₁₂₆=0</tspan></text>
+<rect x="490.0" y="680.0" width="497.109375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="987.109375" y="680.0" width="4.0" height="6" rx="1.5" fill="#0284c7" opacity="0.85"/>
+<circle cx="987.109375" cy="683.0" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+<text x="235" y="676" font-family="monospace" font-size="9" fill="#1e293b">7.[126..126] <tspan font-weight="bold" fill="#16a34a">k₅*=126 → Repair s₁₂₆←1</tspan></text>
+<rect x="490.0" y="689.2" width="497.109375" height="6" fill="#bbf7d0" opacity="0.8"/>
+<rect x="987.109375" y="689.2" width="4.0" height="6" rx="1.5" fill="#16a34a" opacity="0.85"/>
+<text x="235" y="692" font-family="monospace" font-size="9" fill="#1e293b">8.[  0..128] <tspan font-weight="bold" fill="#16a34a">Probe #38: Π₁₂₇=1 (ALL 16 HOPS OK!)</tspan></text>
+<rect x="490.0" y="698.4" width="505.0" height="6" rx="1.5" fill="#16a34a" opacity="0.85"/>
+<circle cx="991.0546875" cy="701.4" r="3.2" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+</svg>

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="1000" height="530">
+<defs>
+  <linearGradient id="bg6" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#f1f5f9"/>
+  </linearGradient>
+  <marker id="arrDark" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#1e293b"/>
+  </marker>
+  <marker id="arrGreen6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#16a34a"/>
+  </marker>
+  <marker id="arrRed6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
+  </marker>
+</defs>
+<rect width="1000" height="530" rx="10" fill="url(#bg6)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="16" width="960" height="44" rx="6" fill="#0f172a"/>
+<text x="500" y="43" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#ffffff" text-anchor="middle">
+Constructive 2-Layer Transformer Matrix Circuit vs. Meta-Cognitive Epistemic Switching Architecture
+</text>
+<rect x="20" y="72" width="465" height="438" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="252" y="96" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">A. Constructive 2-Layer Transformer Circuit for Optimal Bisection</text>
+<text x="252" y="113" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">Proves Matrix-Multiply + Softmax + ReLU Can Represent Exact Solver</text>
+<rect x="38" y="126" width="429" height="56" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+<text x="252" y="148" font-family="Helvetica, Arial, sans-serif" font-size="11.2" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Input Token Stream: History h_t = ((a₁,o₁), ..., (a_t,o_t))</text>
+<text x="252" y="168" font-family="monospace" font-size="9.6" font-weight="bold" fill="#1e293b" text-anchor="middle">Value Projection W_V encodes log-likelihood rows ln(O_a)_{o,•} ∈ ℝ^{D+1}</text>
+<line x1="252" y1="182" x2="252" y2="200" stroke="#334155" stroke-width="2" marker-end="url(#arrDark)"/>
+<rect x="38" y="202" width="429" height="56" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+<text x="252" y="224" font-family="Helvetica, Arial, sans-serif" font-size="11.2" font-weight="bold" fill="#14532d" text-anchor="middle">Layer 1 (Self-Attention + Softmax) = Exact Bayesian Filter</text>
+<text x="252" y="244" font-family="monospace" font-size="9.6" font-weight="bold" fill="#1e293b" text-anchor="middle">ℓ_t = ℓ₀ + ∑_{τ=1}^t ln diag(Λ_{a_τ}(o_τ))  ⟹  b_t = Softmax(ℓ_t) ∈ Δᴰ</text>
+<line x1="252" y1="258" x2="252" y2="276" stroke="#334155" stroke-width="2" marker-end="url(#arrDark)"/>
+<rect x="38" y="278" width="429" height="56" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+<text x="252" y="300" font-family="Helvetica, Arial, sans-serif" font-size="11.2" font-weight="bold" fill="#78350f" text-anchor="middle">Layer 2A (Causal Lower-Triangular Linear Map W_Π = Π)</text>
+<text x="252" y="320" font-family="monospace" font-size="9.6" font-weight="bold" fill="#1e293b" text-anchor="middle">Prefix Cumulative Probabilities: p_t = Π b_t  (p_m = ∑_{k≤m} b_k)</text>
+<line x1="252" y1="334" x2="252" y2="352" stroke="#334155" stroke-width="2" marker-end="url(#arrDark)"/>
+<rect x="38" y="354" width="429" height="56" rx="5" fill="#fae8ff" stroke="#9333ea" stroke-width="1.8"/>
+<text x="252" y="376" font-family="Helvetica, Arial, sans-serif" font-size="11.2" font-weight="bold" fill="#581c87" text-anchor="middle">Layer 2B (2-Layer ReLU MLP + ArgMax) = KKT Midpoint Split</text>
+<text x="252" y="396" font-family="monospace" font-size="9.6" font-weight="bold" fill="#1e293b" text-anchor="middle">score_m = -ReLU(p_m - 0.5) - ReLU(0.5 - p_m)  ⟹  m* = argmax_m score_m</text>
+<rect x="38" y="424" width="429" height="72" rx="5" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+<text x="48" y="442" font-family="Helvetica, Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#991b1b">Why Raw Autoregressive LLMs Fail Despite Circuit Expressivity:</text>
+<text x="48" y="458" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#7f1d1d">1. Pre-training learns pseudo-inverse O_e2e† (freq guessing) instead of Π.</text>
+<text x="48" y="473" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#7f1d1d">2. Hallucinates world matrices (sets Ω_{UseDNS}=0 and P_SSH=I₄ instead of rank 2).</text>
+<text x="48" y="488" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#7f1d1d">3. Greedy RLHF ignores epistemic value I(S;O|a) and emits premature ontic fixes.</text>
+<rect x="515" y="72" width="465" height="438" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="747" y="96" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">B. Meta-Cognitive Detector &amp; Neuro-Symbolic Solver Routing</text>
+<text x="747" y="113" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">Detecting Rank-Deficiency &amp; Censoring Before Ontic Intervention</text>
+<rect x="535" y="126" width="425" height="92" rx="5" fill="#f8fafc" stroke="#475569" stroke-width="1.8"/>
+<text x="747" y="145" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#0f172a" text-anchor="middle">STEP 1: Structural &amp; Spectral Problem-Class Detector</text>
+<text x="547" y="163" font-family="monospace" font-size="9" fill="#1e293b">• Aliasing Ratio   : ρ_alias = |E(o)| = 1ᵀ(O_a)_{i,•} ≫ 1 (Nullspace &gt; 0)</text>
+<text x="547" y="179" font-family="monospace" font-size="9" fill="#1e293b">• Cascade Depth    : D = N·M ≥ D_min with sequential censoring κ*(s)</text>
+<text x="547" y="195" font-family="monospace" font-size="9" fill="#1e293b">• Posterior Entropy: H(b_t) = -∑ b_k log₂ b_k &gt; τ_safe (Ambiguity Gate)</text>
+<text x="547" y="210" font-family="monospace" font-size="9" font-weight="bold" fill="#dc2626">• Expected Drift   : ΔK = (α(M_o - k) - 1)/M_o &gt; 0 (Heuristic Hazard!)</text>
+<line x1="747" y1="218" x2="747" y2="240" stroke="#1e293b" stroke-width="2" marker-end="url(#arrDark)"/>
+<polygon points="747,242 895,276 747,310 599,276" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+<text x="747" y="273" font-family="monospace" font-size="10.5" font-weight="bold" fill="#713f12" text-anchor="middle">Is H(b_t) &gt; τ_safe  OR  ρ_alias &gt; 1?</text>
+<text x="747" y="288" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#854d0e" text-anchor="middle">(High Ambiguity / Censoring Detected)</text>
+<path d="M 640 292 L 640 336" fill="none" stroke="#16a34a" stroke-width="2.2" marker-end="url(#arrGreen6)"/>
+<text x="612" y="320" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="bold" fill="#16a34a">YES</text>
+<rect x="533" y="340" width="212" height="154" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+<text x="639" y="358" font-family="Helvetica, Arial, sans-serif" font-size="10.8" font-weight="bold" fill="#166534" text-anchor="middle">MODE A: Formal Epistemic Solver</text>
+<text x="541" y="376" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#14532d">1. ABSTAIN from all ontic edits!</text>
+<text x="541" y="393" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#14532d">2. Compile DAG into C99 / LP /</text>
+<text x="549" y="406" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#14532d">MILP Bellman Prefix Solver.</text>
+<text x="541" y="423" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#14532d">3. If prefix probes unavailable,</text>
+<text x="549" y="436" font-family="Helvetica, Arial, sans-serif" font-size="9.6" font-weight="bold" fill="#166534">DISCLOSE to user:</text>
+<text x="545" y="452" font-family="monospace" font-size="8.6" fill="#14532d">"|E(o)|=48 states aliased;</text>
+<text x="545" y="464" font-family="monospace" font-size="8.6" fill="#14532d">H(b)=5.58 bits. Running</text>
+<text x="545" y="476" font-family="monospace" font-size="8.6" fill="#14532d">bisection probe Π_63 first."</text>
+<path d="M 855 292 L 855 336" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrDark)"/>
+<text x="875" y="320" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="bold" fill="#2563eb">NO (H=0)</text>
+<rect x="755" y="340" width="208" height="154" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.8"/>
+<text x="859" y="358" font-family="Helvetica, Arial, sans-serif" font-size="10.8" font-weight="bold" fill="#1e3a8a" text-anchor="middle">MODE B: Verified Ontic Repair</text>
+<text x="763" y="376" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#1e3a8a">1. Unique frontier k* verified</text>
+<text x="771" y="389" font-family="monospace" font-size="9.2" fill="#1e3a8a">(b_t = u_{k*}, H(b_t) = 0).</text>
+<text x="763" y="408" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#1e3a8a">2. Execute surgical intervention</text>
+<text x="771" y="421" font-family="monospace" font-size="9.2" font-weight="bold" fill="#1d4ed8">do(s_{k*} ← 1).</text>
+<text x="763" y="440" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#1e3a8a">3. Advance monotonic bound</text>
+<text x="771" y="453" font-family="monospace" font-size="9.2" fill="#1e3a8a">L_{t+1} ← k* + 1</text>
+<text x="763" y="472" font-family="Helvetica, Arial, sans-serif" font-size="9.6" fill="#1e3a8a">4. Re-enter Detector for k₂*.</text>
+</svg>

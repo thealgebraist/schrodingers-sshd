@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 680" width="980" height="680">
+<defs>
+  <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#f1f5f9"/>
+  </linearGradient>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+  </marker>
+  <marker id="arrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
+  </marker>
+  <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#16a34a"/>
+  </marker>
+</defs>
+<rect width="980" height="680" rx="10" fill="url(#bgGrad)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="16" width="940" height="48" rx="6" fill="#1e293b"/>
+<text x="490" y="45" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">
+SIMPLE EXAMPLE (N=2 Hops, D=7 Stages, W=8 Frontier States): Exact Matrix Projection Trace for True Faults s_2=0, s_5=0 (k* = 2)
+</text>
+<rect x="20" y="76" width="940" height="106" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="36" y="98" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">Latent State Vector s ∈ {0,1}⁷ &amp; Causal Censoring Frontier κ*(s) = 2 (Fault at s₅=0 is Masked by s₂=0):</text>
+<rect x="42" y="112" width="92" height="54" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="88" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">k=0</text>
+<text x="88" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop0:Agent</text>
+<text x="88" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">s_0=1 (OK)</text>
+<line x1="134" y1="139" x2="154" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="154" y="112" width="92" height="54" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="200" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">k=1</text>
+<text x="200" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop0:TCP22</text>
+<text x="200" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">s_1=1 (OK)</text>
+<line x1="246" y1="139" x2="266" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="266" y="112" width="92" height="54" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+<text x="312" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#991b1b" text-anchor="middle">k=2</text>
+<text x="312" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop0:Auth</text>
+<text x="312" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">s₂=0 (k*=2)</text>
+<line x1="358" y1="139" x2="378" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrowRed)"/>
+<rect x="378" y="112" width="92" height="54" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="424" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">k=3</text>
+<text x="424" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop0:Fwd</text>
+<text x="424" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">s_3=1 (OK)</text>
+<line x1="470" y1="139" x2="490" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="490" y="112" width="92" height="54" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="536" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">k=4</text>
+<text x="536" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop1:Agent</text>
+<text x="536" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">s_4=1 (OK)</text>
+<line x1="582" y1="139" x2="602" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="602" y="112" width="92" height="54" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="648" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">k=5</text>
+<text x="648" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop1:DNS53</text>
+<text x="648" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#92400e" text-anchor="middle">s₅=0 (MASKED)</text>
+<line x1="694" y1="139" x2="714" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="714" y="112" width="92" height="54" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="760" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#166534" text-anchor="middle">k=6</text>
+<text x="760" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">Hop1:Auth</text>
+<text x="760" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">s_6=1 (OK)</text>
+<line x1="806" y1="139" x2="826" y2="139" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)"/>
+<rect x="826" y="112" width="92" height="54" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+<text x="872" y="130" font-family="monospace" font-size="12" font-weight="bold" fill="#075985" text-anchor="middle">k=7</text>
+<text x="872" y="145" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#334155" text-anchor="middle">ALL_OK (D)</text>
+<text x="872" y="160" font-family="monospace" font-size="10" font-weight="bold" fill="#075985" text-anchor="middle">State u₇</text>
+<rect x="20" y="194" width="940" height="108" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="34" y="214" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">Step t=0 (Prior Belief b₀)</text>
+<text x="34" y="231" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Uniform over [L₀, R₀] = [0..7], Width W₀ = 8, Entropy H(b₀) = log₂(8) = 3.000 bits</text>
+<text x="34" y="248" font-family="monospace" font-size="11" font-weight="bold" fill="#1e3a8a">b₀ = (1/8, ..., 1/8)ᵀ  |  Split: m₁ = L₀ + dp[8] - 1 = 3</text>
+<text x="34" y="290" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#dc2626">▶ Execute Prefix Probe Π₃ (test stages 0..3): Since k*=2 ≤ 3, probe returns y₃ = 1 (FAIL)!</text>
+<line x1="654" y1="266" x2="948" y2="266" stroke="#64748b" stroke-width="1.5"/>
+<rect x="660" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="676.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="676.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_0</text>
+<rect x="696" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="712.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="712.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_1</text>
+<rect x="732" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="748.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="748.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_2</text>
+<rect x="768" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="784.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="784.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_3</text>
+<line x1="802.0" y1="208" x2="802.0" y2="282" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/>
+<text x="802.0" y="206" font-family="monospace" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">Π_3</text>
+<rect x="804" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="820.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="820.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_4</text>
+<rect x="840" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="856.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="856.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_5</text>
+<rect x="876" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="892.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="892.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_6</text>
+<rect x="912" y="261" width="32" height="5" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="928.0" y="257" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/8</text>
+<text x="928.0" y="279" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_7</text>
+<rect x="20" y="310" width="940" height="108" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="34" y="330" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">Step t=1 (Posterior b₁ after Π₃ = FAIL)</text>
+<text x="34" y="347" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Project via P_[0,3] = diag(1,1,1,1,0,0,0,0): Support [L₁, R₁] = [0..3], Width W₁ = 4, H(b₁) = 2.000 bits (ΔI = 1.0 bit)</text>
+<text x="34" y="364" font-family="monospace" font-size="11" font-weight="bold" fill="#1e3a8a">b₁ = P_[0,3] b₀ / (1ᵀ P_[0,3] b₀) = (1/4, 1/4, 1/4, 1/4, 0, 0, 0, 0)ᵀ  |  Split: m₂ = 1</text>
+<text x="34" y="406" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#16a34a">▶ Execute Prefix Probe Π₁ (test stages 0..1): Since k*=2 > 1, stages 0..1 are healthy → returns y₁ = 0 (PASS)!</text>
+<line x1="654" y1="382" x2="948" y2="382" stroke="#64748b" stroke-width="1.5"/>
+<rect x="660" y="371" width="32" height="11" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="676.0" y="367" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/4</text>
+<text x="676.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_0</text>
+<rect x="696" y="371" width="32" height="11" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="712.0" y="367" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/4</text>
+<text x="712.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_1</text>
+<line x1="730.0" y1="324" x2="730.0" y2="398" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/>
+<text x="730.0" y="322" font-family="monospace" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">Π_1</text>
+<rect x="732" y="371" width="32" height="11" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="748.0" y="367" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/4</text>
+<text x="748.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_2</text>
+<rect x="768" y="371" width="32" height="11" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="784.0" y="367" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/4</text>
+<text x="784.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_3</text>
+<rect x="804" y="380" width="32" height="2" fill="#e2e8f0"/>
+<text x="820.0" y="377" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="820.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_4</text>
+<rect x="840" y="380" width="32" height="2" fill="#e2e8f0"/>
+<text x="856.0" y="377" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="856.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_5</text>
+<rect x="876" y="380" width="32" height="2" fill="#e2e8f0"/>
+<text x="892.0" y="377" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="892.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_6</text>
+<rect x="912" y="380" width="32" height="2" fill="#e2e8f0"/>
+<text x="928.0" y="377" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="928.0" y="395" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_7</text>
+<rect x="20" y="426" width="940" height="108" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="34" y="446" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">Step t=2 (Posterior b₂ after Π₁ = PASS)</text>
+<text x="34" y="463" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Project via P_[2,3] = diag(0,0,1,1,0,0,0,0): Support [L₂, R₂] = [2..3], Width W₂ = 2, H(b₂) = 1.000 bit (ΔI = 1.0 bit)</text>
+<text x="34" y="480" font-family="monospace" font-size="11" font-weight="bold" fill="#1e3a8a">b₂ = P_[2,3] b₁ / (1ᵀ P_[2,3] b₁) = (0, 0, 1/2, 1/2, 0, 0, 0, 0)ᵀ  |  Split: m₃ = 2</text>
+<text x="34" y="522" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#dc2626">▶ Execute Prefix Probe Π₂ (test stages 0..2): Since k*=2 ≤ 2, probe returns y₂ = 1 (FAIL)!</text>
+<line x1="654" y1="498" x2="948" y2="498" stroke="#64748b" stroke-width="1.5"/>
+<rect x="660" y="496" width="32" height="2" fill="#e2e8f0"/>
+<text x="676.0" y="493" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="676.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_0</text>
+<rect x="696" y="496" width="32" height="2" fill="#e2e8f0"/>
+<text x="712.0" y="493" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="712.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_1</text>
+<rect x="732" y="475" width="32" height="23" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="748.0" y="471" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/2</text>
+<text x="748.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_2</text>
+<line x1="766.0" y1="440" x2="766.0" y2="514" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/>
+<text x="766.0" y="438" font-family="monospace" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">Π_2</text>
+<rect x="768" y="475" width="32" height="23" rx="2" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+<text x="784.0" y="471" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1/2</text>
+<text x="784.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_3</text>
+<rect x="804" y="496" width="32" height="2" fill="#e2e8f0"/>
+<text x="820.0" y="493" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="820.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_4</text>
+<rect x="840" y="496" width="32" height="2" fill="#e2e8f0"/>
+<text x="856.0" y="493" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="856.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_5</text>
+<rect x="876" y="496" width="32" height="2" fill="#e2e8f0"/>
+<text x="892.0" y="493" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="892.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_6</text>
+<rect x="912" y="496" width="32" height="2" fill="#e2e8f0"/>
+<text x="928.0" y="493" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="928.0" y="511" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_7</text>
+<rect x="20" y="542" width="940" height="108" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="34" y="562" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">Step t=3 (Exact Collapse b₃ = u₂ → Surgical Ontic Repair &amp; Monotonic Advance to [3..7])</text>
+<text x="34" y="579" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Project via P_[2,2] = u₂ u₂ᵀ: Support L₃ = R₃ = 2, Width W₃ = 1, Entropy H(b₃) = 0.000 bits! Exact Fault k*=2 Identified!</text>
+<text x="34" y="596" font-family="monospace" font-size="11" font-weight="bold" fill="#1e3a8a">b₃ = (0, 0, 1, 0, 0, 0, 0, 0)ᵀ = u₂  ⟹  Repair do(s₂ ← 1), update L_new ← 3, bisect [3..6]</text>
+<text x="34" y="638" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#2563eb">▶ Phase 2 Summary: From L=3, probe Π₆ (FAIL) → bisect [3..6] via Π₄ (PASS) → Π₅ (FAIL) → localizes k₂*=5 in 3 more probes!</text>
+<line x1="654" y1="614" x2="948" y2="614" stroke="#64748b" stroke-width="1.5"/>
+<rect x="660" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="676.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="676.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_0</text>
+<rect x="696" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="712.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="712.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_1</text>
+<rect x="732" y="568" width="32" height="46" rx="2" fill="#16a34a" stroke="#1e40af" stroke-width="1"/>
+<text x="748.0" y="564" font-family="monospace" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">1.0</text>
+<text x="748.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#0f172a" text-anchor="middle">u_2</text>
+<rect x="768" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="784.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="784.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_3</text>
+<rect x="804" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="820.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="820.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_4</text>
+<rect x="840" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="856.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="856.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_5</text>
+<rect x="876" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="892.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="892.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_6</text>
+<rect x="912" y="612" width="32" height="2" fill="#e2e8f0"/>
+<text x="928.0" y="609" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">0</text>
+<text x="928.0" y="627" font-family="monospace" font-size="10" font-weight="bold" fill="#94a3b8" text-anchor="middle">u_7</text>
+</svg>

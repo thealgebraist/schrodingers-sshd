@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460">
+<defs>
+  <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#f1f5f9"/>
+  </linearGradient>
+  <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#16a34a"/>
+  </marker>
+  <marker id="arrRed2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626"/>
+  </marker>
+</defs>
+<rect width="1000" height="460" rx="10" fill="url(#bg4)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="16" width="960" height="44" rx="6" fill="#1e293b"/>
+<text x="500" y="43" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">
+Birth-Death Markov Chain P_LLM Under Collateral Config Damage (α = 0.25, M_o = 32 Aliased States)
+</text>
+<rect x="20" y="72" width="960" height="175" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="36" y="95" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">State Transition Graph of Unbisected LLM Fault Count K_t ∈ {0 .. 32} (Positive Drift ΔK_t = (α(M_o - k) - 1)/M_o &gt; 0):</text>
+<ellipse cx="90" cy="158" rx="64" ry="34" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+<text x="90" y="155" font-family="monospace" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">K = 0</text>
+<text x="90" y="172" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#334155" text-anchor="middle">HEALTHY (Absorbing)</text>
+<ellipse cx="260" cy="158" rx="64" ry="34" fill="#f1f5f9" stroke="#64748b" stroke-width="2.5"/>
+<text x="260" y="155" font-family="monospace" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">K = 1</text>
+<text x="260" y="172" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#334155" text-anchor="middle">1 Fault</text>
+<ellipse cx="430" cy="158" rx="64" ry="34" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+<text x="430" y="155" font-family="monospace" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">K = 5</text>
+<text x="430" y="172" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#334155" text-anchor="middle">Initial (5 Faults)</text>
+<ellipse cx="640" cy="158" rx="64" ry="34" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/>
+<text x="640" y="155" font-family="monospace" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">K = 6</text>
+<text x="640" y="172" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#334155" text-anchor="middle">6 Faults</text>
+<ellipse cx="860" cy="158" rx="64" ry="34" fill="#fecaca" stroke="#991b1b" stroke-width="2.5"/>
+<text x="860" y="155" font-family="monospace" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">K_eq = 28</text>
+<text x="860" y="172" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#334155" text-anchor="middle">Chaotic Attractor!</text>
+<path d="M 485 136 Q 535 102 585 136" fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#arrRed2)"/>
+<text x="535" y="112" font-family="monospace" font-size="11" font-weight="bold" fill="#dc2626" text-anchor="middle">λ₅ = α(27/32) = 0.2109</text>
+<path d="M 585 180 Q 535 214 485 180" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#arrBlue)"/>
+<text x="535" y="216" font-family="monospace" font-size="11" font-weight="bold" fill="#16a34a" text-anchor="middle">μ₅ = 1/32 = 0.03125</text>
+<line x1="196" y1="158" x2="156" y2="158" stroke="#16a34a" stroke-width="2" marker-end="url(#arrBlue)"/>
+<text x="176" y="148" font-family="monospace" font-size="10" fill="#16a34a" text-anchor="middle">μ₁=1/32</text>
+<line x1="324" y1="158" x2="364" y2="158" stroke="#64748b" stroke-width="2" stroke-dasharray="4,4"/>
+<line x1="706" y1="158" x2="792" y2="158" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="5,3" marker-end="url(#arrRed2)"/>
+<text x="749" y="146" font-family="monospace" font-size="10.5" font-weight="bold" fill="#dc2626" text-anchor="middle">λ/μ = 6.75×</text>
+<rect x="20" y="260" width="960" height="182" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="36" y="284" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#0f172a">Empirical C99 Benchmark (10,000 Monte Carlo Trials, K=5 Masked Faults in 16-Hop Chain, 50-Step Budget):</text>
+<text x="36" y="317" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">Optimal C99 Matrix-Bisection Solver</text>
+<rect x="430" y="302" width="510" height="22" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<rect x="430" y="302" width="510.0" height="22" rx="4" fill="#16a34a"/>
+<text x="442" y="317" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">100.00% Solved (Avg 35.52 probes, 0.00 wrong repairs)</text>
+<text x="36" y="361" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">Unbisected LLM Policy (α = 0.00, Zero Collateral Damage)</text>
+<rect x="430" y="346" width="510" height="22" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<rect x="430" y="346" width="17.697" height="22" rx="4" fill="#d97706"/>
+<text x="442" y="361" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">3.47% Solved (Avg 50.00 probes, 47.91 wrong repairs)</text>
+<text x="36" y="405" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">Unbisected LLM Policy (α = 0.25, Realistic Config Mutation Hazard)</text>
+<rect x="430" y="390" width="510" height="22" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<rect x="430" y="390" width="4.0" height="22" rx="4" fill="#dc2626"/>
+<text x="442" y="405" font-family="monospace" font-size="11" font-weight="bold" fill="#0f172a">0.03% Solved (Avg 50.00 probes, 48.23 wrong repairs)</text>
+</svg>

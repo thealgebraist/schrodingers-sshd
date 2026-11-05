@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510">
+<defs>
+  <linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#f8fafc"/>
+    <stop offset="100%" stop-color="#eef2f6"/>
+  </linearGradient>
+</defs>
+<rect width="1000" height="510" rx="10" fill="url(#bg5)" stroke="#cbd5e1" stroke-width="2"/>
+<rect x="20" y="16" width="960" height="44" rx="6" fill="#0f172a"/>
+<text x="500" y="43" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#ffffff" text-anchor="middle">
+Computational Complexity Boundary (NP-Hard vs. P via Total Unimodularity) &amp; Convex Info-Gain Optimization
+</text>
+<rect x="20" y="72" width="465" height="418" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="252" y="96" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">A. Polyhedral Integrality: General Test Matrix A vs. Cascade Π</text>
+<rect x="36" y="110" width="433" height="168" rx="5" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+<text x="48" y="129" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#991b1b">1. General Non-Cascaded Test Matrix A ∈ {0,1}^{P×n} (NP-Hard / Co-NP)</text>
+<text x="48" y="146" font-family="Helvetica, Arial, sans-serif" font-size="10.2" fill="#7f1d1d">• Reductions: Minimum Test Collection (Garey &amp; Johnson SP6) &amp; Set Cover.</text>
+<text x="48" y="162" font-family="Helvetica, Arial, sans-serif" font-size="10.2" fill="#7f1d1d">• Submatrices have det(B) ∈ {±2, ±3, ...} ⟹ LP relaxation has FRACTIONAL</text>
+<text x="58" y="177" font-family="Helvetica, Arial, sans-serif" font-size="10.2" fill="#7f1d1d">vertices (Integrality Gap = Ω(log n)); requires MILP Branch-and-Cut.</text>
+<text x="48" y="193" font-family="monospace" font-size="9.2" font-weight="bold" fill="#991b1b">• Decision Tree Depth h*: NP-Complete (Inapproximable &lt; (1-o(1))ln n)</text>
+<polygon points="150,268 215,222 330,232 295,268" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+<circle cx="215" cy="222" r="4.5" fill="#dc2626"/>
+<text x="215" y="213" font-family="monospace" font-size="8.8" font-weight="bold" fill="#dc2626" text-anchor="middle">Fractional LP Vertex x*∉ℤⁿ</text>
+<circle cx="200" cy="250" r="3.5" fill="#1e293b"/>
+<circle cx="250" cy="250" r="3.5" fill="#1e293b"/>
+<text x="360" y="255" font-family="monospace" font-size="8.8" fill="#1e293b" text-anchor="middle">Integer MILP Hull</text>
+<rect x="36" y="288" width="433" height="186" rx="5" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+<text x="48" y="307" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#166534">2. Cascaded Prefix Matrix Π &amp; Difference Π⁻¹ (Totally Unimodular → in P!)</text>
+<text x="48" y="324" font-family="Helvetica, Arial, sans-serif" font-size="10.2" fill="#14532d">• Consecutive-Ones Property: Every column/row of Π is a contiguous interval.</text>
+<text x="48" y="340" font-family="Helvetica, Arial, sans-serif" font-size="10.2" fill="#14532d">• Every square submatrix B of Π or Π⁻¹ has det(B) ∈ {-1, 0, +1} (TUM).</text>
+<text x="48" y="356" font-family="Helvetica, Arial, sans-serif" font-size="10.2" font-weight="bold" fill="#166534">• Hoffman–Kruskal Theorem: LP Relaxation Polytope P_LP = conv(P_MILP)!</text>
+<text x="48" y="372" font-family="monospace" font-size="9.2" fill="#14532d">  Integrality Gap = 0.000 | Treewidth tw(G)=1 | Exact DP O(log D)</text>
+<polygon points="165,458 195,410 295,410 325,458" fill="#bbf7d0" stroke="#16a34a" stroke-width="2"/>
+<circle cx="165" cy="458" r="4.5" fill="#16a34a" stroke="#ffffff" stroke-width="1"/>
+<circle cx="195" cy="410" r="4.5" fill="#16a34a" stroke="#ffffff" stroke-width="1"/>
+<circle cx="295" cy="410" r="4.5" fill="#16a34a" stroke="#ffffff" stroke-width="1"/>
+<circle cx="325" cy="458" r="4.5" fill="#16a34a" stroke="#ffffff" stroke-width="1"/>
+<text x="245" y="438" font-family="monospace" font-size="9.5" font-weight="bold" fill="#166534" text-anchor="middle">All LP Extreme Points ∈ {0,1}ⁿ!</text>
+<rect x="515" y="72" width="465" height="418" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="747" y="96" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#1e293b" text-anchor="middle">B. Convex Programming: Binary Entropy Split &amp; Semidefinite/LP Control</text>
+<line x1="590" y1="310" x2="950" y2="310" stroke="#334155" stroke-width="1.8"/>
+<line x1="590" y1="310" x2="590" y2="130" stroke="#334155" stroke-width="1.8"/>
+<text x="762.5" y="342" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">Cumulative Prefix Probability Mass p_m = ∑_{k=L}^m b_k ∈ [0, 1]</text>
+<text x="542" y="227.5" font-family="Helvetica, Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1e293b" text-anchor="middle" transform="rotate(-90 542,227.5)">Info Gain I(S; O | Π_m) = h₂(p_m) [bits]</text>
+<line x1="590" y1="145" x2="935" y2="145" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="584" y="149" font-family="monospace" font-size="9.5" font-weight="bold" fill="#16a34a" text-anchor="end">1.0</text>
+<line x1="762.5" y1="310" x2="762.5" y2="145" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4,3"/>
+<text x="762.5" y="325" font-family="monospace" font-size="10" font-weight="bold" fill="#16a34a" text-anchor="middle">p* = 0.50 (m* = ⌊W/2⌋)</text>
+<text x="590" y="325" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">0.0</text>
+<text x="935" y="325" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">1.0</text>
+<polyline points="590.0,310.0 593.5,296.7 596.9,286.7 600.4,277.9 603.8,270.0 607.2,262.7 610.7,256.0 614.1,249.6 617.6,243.6 621.0,238.0 624.5,232.6 628.0,227.5 631.4,222.7 634.9,218.0 638.3,213.6 641.8,209.4 645.2,205.3 648.6,201.5 652.1,197.8 655.5,194.3 659.0,190.9 662.5,187.7 665.9,184.6 669.4,181.6 672.8,178.8 676.2,176.1 679.7,173.6 683.1,171.2 686.6,168.9 690.0,166.7 693.5,164.6 697.0,162.6 700.4,160.8 703.9,159.0 707.3,157.4 710.8,155.9 714.2,154.5 717.6,153.1 721.1,151.9 724.5,150.8 728.0,149.8 731.5,148.9 734.9,148.1 738.4,147.3 741.8,146.7 745.2,146.2 748.7,145.8 752.1,145.4 755.6,145.2 759.0,145.0 762.5,145.0 766.0,145.0 769.4,145.2 772.9,145.4 776.3,145.8 779.8,146.2 783.2,146.7 786.6,147.3 790.1,148.1 793.5,148.9 797.0,149.8 800.5,150.8 803.9,151.9 807.4,153.1 810.8,154.5 814.2,155.9 817.7,157.4 821.1,159.0 824.6,160.8 828.0,162.6 831.5,164.6 835.0,166.7 838.4,168.9 841.9,171.2 845.3,173.6 848.8,176.1 852.2,178.8 855.7,181.6 859.1,184.6 862.5,187.7 866.0,190.9 869.5,194.3 872.9,197.8 876.3,201.5 879.8,205.3 883.2,209.4 886.7,213.6 890.1,218.0 893.6,222.7 897.0,227.5 900.5,232.6 904.0,238.0 907.4,243.6 910.9,249.6 914.3,256.0 917.8,262.7 921.2,270.0 924.6,277.9 928.1,286.7 931.5,296.7 935.0,310.0" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="762.5" cy="145.0" r="5.5" fill="#16a34a" stroke="#ffffff" stroke-width="1.5"/>
+<text x="762.5" y="135" font-family="Helvetica, Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#16a34a" text-anchor="middle">Global Concave Maximum: h₂(1/2) = 1.000 bit/probe</text>
+<circle cx="611.6" cy="254.3" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
+<text x="623.6" y="258.3" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="bold" fill="#dc2626">Linear Walk (Codex Step 3): p=1/16 → 0.337 bits!</text>
+<rect x="531" y="354" width="433" height="120" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+<text x="543" y="373" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a">Exact Optimization Formulations (Sections 7 &amp; 8):</text>
+<text x="543" y="391" font-family="monospace" font-size="9.5" fill="#1e3a8a">1. Min-Cost Fault ID (LP) : min cᵀs  s.t.  Π⁻¹ y = u_{k*}, s ∈ [0,1]ᴰ</text>
+<text x="543" y="408" font-family="monospace" font-size="9.5" fill="#1e3a8a">2. Multi-Fault Set-Cover  : MILP min ∑ w_a x_a s.t. A_disc x ≥ 1</text>
+<text x="543" y="425" font-family="monospace" font-size="9.5" fill="#1e3a8a">3. Max Info-Gain (Convex) : min_{w∈Δ} ∑_i (r_iᵀ b) log₂(r_iᵀ b)</text>
+<text x="543" y="442" font-family="monospace" font-size="9.5" fill="#1e3a8a">4. Bellman LP Primal-Dual : max V₀ s.t. V(S) ≤ 1 + p_L V(S_L) + p_R V(S_R)</text>
+<text x="543" y="460" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="bold" fill="#1d4ed8">• Strict concavity h₂″(p) = -1/(p(1-p)ln 2) &lt; 0 guarantees unique optimum!</text>
+</svg>

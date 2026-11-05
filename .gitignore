@@ -1,0 +1,38 @@
+# Security & Credentials
+*.key
+*.key.txt
+*.pem
+*.token
+*.env
+*id_rsa*
+*id_ed25519*
+!*.pub
+!test-topology.conf
+
+# Compiled binaries & objects
+*.o
+*.a
+*.so
+*.dylib
+diagnose
+cascaded_diag_solver
+minimal_cascade_game
+fast_adversarial_smoke_detector
+graph_problem_detector
+symbolic_adt_diagnoser
+tabula_rasa_diagnoser
+
+# Python & OS
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.DS_Store
+
+# TeX build artifacts
+*.aux
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.log

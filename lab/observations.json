@@ -1,0 +1,58 @@
+{
+  "runtime": {
+    "virtualization": "Docker Engine 26.1.5",
+    "network": "ssh-diagnosis-net",
+    "network_driver": "bridge",
+    "internal": true,
+    "containers": [
+      {"name": "ssh-server-a", "address_at_capture": "172.19.0.2", "state": "running"},
+      {"name": "ssh-server-b", "address_at_capture": "172.19.0.3", "state": "running"}
+    ],
+    "ports_published_on_host": false
+  },
+  "observations": [
+    {
+      "case": "key_auth_control",
+      "action": "SSH with lab/client/id_unlocked to each server and run a remote echo command",
+      "result": "Both remote commands completed successfully."
+    },
+    {
+      "case": "agent_missing",
+      "action": "Set SSH_AUTH_SOCK to a nonexistent path; run ssh-add -l and SSH with public-key auth only from a home with no private key file.",
+      "client_output": "ssh-add: Error connecting to agent: No such file or directory; SSH: Permission denied (publickey,password).",
+      "server_evidence": "Server A recorded the connection. It accepted the matching public key after a working ssh-agent was started and the authorized key loaded.",
+      "control_result": "With the agent running and key loaded, the same client completed a remote command."
+    },
+    {
+      "case": "encrypted_key_batch_mode",
+      "action": "Use the passphrase-protected lab/client/id_ed25519 in BatchMode=yes.",
+      "client_output": "Permission denied (publickey,password).",
+      "server_evidence": "sshd found the offered public key in authorized_keys but authentication did not complete before the client disconnected.",
+      "interactive_control": "A terminal displayed the private-key passphrase prompt; entering the lab-only passphrase completed a remote command."
+    },
+    {
+      "case": "interactive_server_password",
+      "action": "Connect to Server B without a usable key.",
+      "batch_mode_output": "Permission denied (publickey,password), exit status 255.",
+      "interactive_output": "deploy@172.19.0.3's password:",
+      "control_result": "Entering the lab-only account password completed a remote command."
+    },
+    {
+      "case": "python_wrapper_timeout_at_password_prompt",
+      "action": "Python opened a PTY, launched SSH to Server B, and killed it after a 2-second deadline without sending a password.",
+      "python_result": {"timed_out": true, "returncode_after_kill": -9},
+      "captured_terminal": "Warning: Permanently added host key; deploy@172.19.0.3's password:",
+      "interpretation": "The client reached sshd and waited for interactive authentication; the Python deadline expired because no password was supplied."
+    },
+    {
+      "case": "remote_unavailable_control",
+      "action": "Stop Server B and SSH to its existing container IP.",
+      "client_output": "Connection timed out.",
+      "recovery": "Restarting Server B restored the password prompt and successful interactive login."
+    }
+  ],
+  "model_evaluation": {
+    "luna_trials_file": "luna_trials.json",
+    "python_responses_api": "HTTP 429 project_spend_limit_exceeded before generation, both before and after the key update."
+  }
+}

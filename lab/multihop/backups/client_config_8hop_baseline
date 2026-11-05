@@ -1,0 +1,40 @@
+Host *
+    User deploy
+    IdentityFile /home/deploy/.ssh/id_ed25519
+    IdentitiesOnly yes
+    BatchMode yes
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    ConnectTimeout 4
+    LogLevel ERROR
+
+Host server1
+    HostName server1
+
+Host server3
+    HostName server3
+    ProxyJump server1
+
+Host server2
+    HostName server2
+    ProxyJump server3
+
+Host server4
+    HostName server4
+    ProxyJump server2
+
+Host server5
+    HostName server5
+    ProxyJump server4
+
+Host server6
+    HostName server6
+    ProxyJump server5
+
+Host server7
+    HostName server7
+    ProxyJump server6
+
+Host server8
+    HostName server8
+    ProxyJump server7

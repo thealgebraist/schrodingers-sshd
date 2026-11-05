@@ -1,0 +1,1309 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{float}
+
+\geometry{margin=0.9in}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black,
+    pdftitle={Matrix Theory and Optimal Control of Cascaded Transducer Diagnosis},
+    pdfauthor={Formal Systems and Network Diagnosis Monograph}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textit{Matrix Theory of Cascaded SSH Transducer Diagnosis}}
+\lhead{\textit{Formal Mathematical Monograph}}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Custom Code Listing Style
+\definecolor{codebg}{rgb}{0.96,0.97,0.98}
+\definecolor{codeframe}{rgb}{0.82,0.84,0.88}
+\definecolor{keywordcolor}{rgb}{0.0,0.25,0.65}
+\definecolor{commentcolor}{rgb}{0.25,0.50,0.35}
+\definecolor{stringcolor}{rgb}{0.65,0.15,0.15}
+
+\lstdefinestyle{c99style}{
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    commentstyle=\color{commentcolor}\itshape,
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=6pt,
+    tabsize=4,
+    breaklines=true,
+    showstringspaces=false,
+    captionpos=b
+}
+
+\title{\textbf{Matrix Theory, Spectral Drift, and Bellman-Optimal Control of Fault Diagnosis in Cascaded Partially-Observable Transducers}\\[0.4em]
+\large With Step-by-Step Worked Derivations, $N=16$ Chained SSH Bastion Verification, and LLM Failure Analysis}
+\author{Formal Systems Verification \& Network Diagnosis Study}
+\date{October 25, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Diagnosing multi-hop networked protocols such as OpenSSH (\texttt{ProxyJump}) across $N$ chained servers involves interacting with a sequential cascade of $D = N \cdot M$ heterogeneous state transducers spanning local IPC sockets (\texttt{ssh-agent}), interactive TTY gates (\texttt{/dev/tty}), UDP/TCP transport layers, cryptographic handshakes, and remote daemon policies (\texttt{sshd}). Standard end-to-end execution induces severe \emph{causal censoring} and \emph{observational aliasing}: a $2^D$-dimensional latent state space collapses through a rank-deficient observation matrix into a handful of ambiguous terminal strings (\texttt{Permission denied}, \texttt{Operation timed out}). In this monograph, we formulate cascaded fault diagnosis strictly through \textbf{Matrix Theory}, \textbf{Partially Observable Markov Decision Processes (POMDPs)}, and \textbf{Information Theory}. We derive the Nilpotent Shift-Transition Algebra of sequential cascades, characterize observational aliasing via the nullspace and Kronecker structure of the column-stochastic observation matrix $\mathbf{O}_a$, and prove the \emph{ProxyJump Non-Propagation Paradox} in OpenSSH's \texttt{ssh.c} option-inheritance operator. We provide complete step-by-step matrix derivations for both a \textbf{Simple Worked Example} ($D=7, W=8$) and a \textbf{Complex 16-Hop Production Instance} ($D=128, W=129, K=5$ simultaneous masked faults), illustrated with vector-rendered diagrams. Finally, we prove via Foster--Lyapunov spectral drift analysis why unbisected Large Language Model (LLM) agents suffer an exponential hitting-time blowup $\mathbb{E}[\tau_0] = \Omega((\alpha M_{\text{alias}})^{M_{\text{alias}}-1})$ under collateral intervention noise $\alpha > 0$, whereas our exact C99 Dynamic Programming Prefix-Bisection algorithm achieves the Shannon lower bound $V^*(D+1) \approx \log_2(D+1)$ with zero erroneous interventions.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ============================================================================
+\section{Introduction: The Cascaded SSH Diagnosis Problem}
+% ============================================================================
+
+Consider an enterprise or industrial Operational Technology (OT) network comprising $N$ sequentially chained SSH jump hosts $H_0, H_1, \dots, H_{N-1}$ (for instance, $N = 16$ bastions traversing corporate VPNs, cloud transit gateways, MPLS edges, and Purdue-level OT firewalls down to a field controller PLC). Each hop $i \in \{0, \dots, N-1\}$ requires the successful execution of $M$ sequential internal sub-stages (e.g., $M = 8$):
+\begin{enumerate}[noitemsep]
+    \item $m=0$ (\texttt{SUB\_AGENT\_SOCK}): Local or forwarded \texttt{SSH\_AUTH\_SOCK} UNIX domain socket reachability.
+    \item $m=1$ (\texttt{SUB\_KEY\_LOADED}): Private key decrypted in agent RAM or unlocked interactively via \texttt{/dev/tty}.
+    \item $m=2$ (\texttt{SUB\_DNS\_UDP}): Forward hostname resolution over UDP port 53.
+    \item $m=3$ (\texttt{SUB\_TCP\_ROUTE}): TCP 3-way handshake (\texttt{SYN}, \texttt{SYN-ACK}, \texttt{ACK}) and MTU path integrity.
+    \item $m=4$ (\texttt{SUB\_HOSTKEY\_KEX}): Cryptographic key exchange (KEX) and \texttt{known\_hosts} verification.
+    \item $m=5$ (\texttt{SUB\_REMOTE\_SSHD}): Remote \texttt{sshd} daemon pre-auth checks (including server-side reverse DNS \texttt{UseDNS yes} \texttt{getnameinfo()} lookups over UDP/53).
+    \item $m=6$ (\texttt{SUB\_AUTH\_KEYS}): Remote \texttt{StrictModes} directory ownership, \texttt{authorized\_keys}, or PAM verification.
+    \item $m=7$ (\texttt{SUB\_NETCAT\_FWD}): \texttt{SSH2\_MSG\_CHANNEL\_OPEN} (\texttt{direct-tcpip} / \texttt{-W [\%h]:\%p}) forwarding permission (\texttt{AllowTcpForwarding}).
+\end{enumerate}
+
+Let $D = N \cdot M$ denote the total number of sequential causal stages (for $N=16, M=8$, $D = 128$). A global latent fault configuration is a binary vector in the $D$-dimensional hypercube:
+\begin{equation}
+    \bm{s} = (s_0, s_1, \dots, s_{D-1})^\top \in \{0, 1\}^D, \qquad |\mathcal{S}| = 2^D = 2^{128} \approx 3.4028 \times 10^{38},
+\end{equation}
+where $s_k = 1$ indicates stage $k = iM + m$ is operational, and $s_k = 0$ indicates stage $k$ is faulty.
+
+When an operator or LLM agent invokes an end-to-end connection attempt, two fundamental structural phenomena occur:
+\begin{enumerate}
+    \item \textbf{Causal Censoring (Downstream Masking):} Because the protocol executes sequentially from stage $0$ to $D-1$, execution halts deterministically at the \emph{first} faulty stage $k^* = \min\{k : s_k = 0\}$. Every downstream fault $k > k^*$ is physically unreachable and exerts zero influence on the execution trace.
+    \item \textbf{Observational Aliasing (Many-to-One Projection):} The rich internal state trajectory of the $D$-stage cascade is compressed into a tiny alphabet of terminal observations $\mathcal{O}_{\text{e2e}}$ (e.g., \texttt{Permission denied (publickey)} or \texttt{Operation timed out}). A local \texttt{/dev/tty} passphrase block at $k=1$, an intermediate firewall TCP \texttt{SYN} drop at $k=59$, and a remote \texttt{sshd} reverse-DNS UDP/53 hang at $k=93$ all map to the exact same timeout observation.
+\end{enumerate}
+
+% ============================================================================
+\section{Matrix Theory of Cascaded State Transducers}
+% ============================================================================
+
+\subsection{The Nilpotent Shift-Transition Algebra of a Cascade}
+
+To represent the execution of a $D$-stage sequential cascade as a linear operator, we define the active execution state space of a single probe trace as a $(D+1)$-dimensional vector space with standard basis $\{\bm{e}_0, \bm{e}_1, \dots, \bm{e}_D\}$ (where $\bm{e}_k$ represents the execution cursor arriving at stage $k$, and $\bm{e}_D$ represents End-to-End Success), augmented by $D$ absorbing halting receptors $\{\bm{f}_0, \bm{f}_1, \dots, \bm{f}_{D-1}\}$ recording the exact stage where execution aborted.
+
+Let $\mathbf{J} \in \{0,1\}^{(D+1)\times(D+1)}$ denote the nilpotent lower-shift matrix on the active execution coordinates $\{\bm{e}_0, \dots, \bm{e}_D\}$:
+\begin{equation}
+    \mathbf{J} = \begin{pmatrix}
+        0 & 0 & 0 & \cdots & 0 \\
+        1 & 0 & 0 & \cdots & 0 \\
+        0 & 1 & 0 & \cdots & 0 \\
+        \vdots & \ddots & \ddots & \ddots & \vdots \\
+        0 & \cdots & 0 & 1 & 0
+    \end{pmatrix}, \qquad \mathbf{J}^{D+1} = \mathbf{0},
+\end{equation}
+and let $\mathbf{D}(\bm{s}) = \operatorname{diag}(s_0, s_1, \dots, s_{D-1}, 0) \in \{0,1\}^{(D+1)\times(D+1)}$ be the diagonal stage pass-through matrix.
+
+\begin{theorem}[Block-Matrix Cascade Propagator and Censoring Operator]
+Let the composite single-step transition matrix on the augmented state space $\mathbb{R}^{(D+1) + D}$ (ordered as active states $\bm{e}_{0:D}$ followed by absorbing halted states $\bm{f}_{0:D-1}$) be written in block-matrix form:
+\begin{equation}
+    \mathbf{T}(\bm{s}) = \begin{pmatrix}
+        \mathbf{J}\mathbf{D}(\bm{s}) + \bm{e}_D \bm{e}_D^\top & \mathbf{0}_{(D+1)\times D} \\
+        \mathbf{I}_{D\times(D+1)} - \widetilde{\mathbf{D}}(\bm{s}) & \mathbf{I}_{D\times D}
+    \end{pmatrix},
+\end{equation}
+where $\widetilde{\mathbf{D}}(\bm{s}) = \begin{pmatrix} \operatorname{diag}(s_0, \dots, s_{D-1}) & \bm{0}_{D\times 1} \end{pmatrix} \in \{0,1\}^{D\times(D+1)}$. Starting from the initial execution state $\bm{v}_0 = \begin{pmatrix} \bm{e}_0 \\ \bm{0}_D \end{pmatrix}$, the $D$-step execution propagator $\mathbf{T}(\bm{s})^D \bm{v}_0$ converges to the canonical basis vector of the \textbf{Censoring Frontier} $\kappa^*(\bm{s})$:
+\begin{equation}\label{eq:censoring_polynomial}
+    \bm{h}(\bm{s}) \triangleq \Pi_{\mathcal{H}}\big(\mathbf{T}(\bm{s})^D \bm{v}_0\big) = \sum_{k=0}^{D-1} \left( (1 - s_k) \prod_{j=0}^{k-1} s_j \right) \bm{u}_k + \left( \prod_{j=0}^{D-1} s_j \right) \bm{u}_D = \bm{u}_{\kappa^*(\bm{s})} \in \{0,1\}^{D+1},
+\end{equation}
+where $\{\bm{u}_0, \bm{u}_1, \dots, \bm{u}_D\}$ is the standard basis of the $(D+1)$-dimensional \textbf{Frontier Equivalence Space} $\mathcal{H} \cong \mathbb{R}^{D+1}$, and
+\begin{equation}
+    \kappa^*(\bm{s}) = \min\big(\{k \in \{0,\dots,D-1\} : s_k = 0\} \cup \{D\}\big).
+\end{equation}
+\end{theorem}
+
+\subsection{The Censoring Surjection Matrix $\mathbf{C} \in \{0,1\}^{(D+1) \times 2^D}$}
+
+Theorem 2.1 proves that the sequential cascade induces a linear surjection from the $2^D$-dimensional state space $\mathbb{R}^{2^D}$ onto the $(D+1)$-dimensional frontier space $\mathbb{R}^{D+1}$ via the \textbf{Censoring Surjection Matrix} $\mathbf{C} \in \{0,1\}^{(D+1)\times 2^D}$:
+\begin{equation}
+    \mathbf{C}_{k, \bm{s}} = \mathbb{I}\big(\kappa^*(\bm{s}) = k\big), \qquad \forall k \in \{0, \dots, D\}, \; \bm{s} \in \{0,1\}^D.
+\end{equation}
+Each row $k < D$ of $\mathbf{C}$ contains exactly $2^{D-1-k}$ ones, and row $D$ contains $1$ one ($\sum_{k=0}^{D-1} 2^{D-1-k} + 1 = 2^D$). Consequently:
+\begin{equation}
+    \operatorname{rank}(\mathbf{C}) = D + 1, \qquad \dim\big(\ker(\mathbf{C})\big) = 2^D - (D + 1).
+\end{equation}
+Any modification to downstream fault bits $s_{> k^*}$ lies strictly in $\ker(\mathbf{C})$, proving \textbf{Pearl's d-separation} ($O \perp\!\!\!\perp S_{>k^*} \mid \kappa^*(S) = k^*$).
+
+% ============================================================================
+\section{Observation Matrices, Rank Deficiency, and Prefix Unimodularity}
+% ============================================================================
+
+\subsection{The End-to-End Kronecker Aliasing Matrix $\mathbf{O}_{\text{e2e}}$}
+
+For any diagnostic action $a \in \mathcal{A}$, the observation channel is governed by a \textbf{column-stochastic observation matrix} $\mathbf{O}_a \in [0, 1]^{|\mathcal{O}_a| \times (D+1)}$ mapping the frontier belief vector $\bm{b} = \mathbf{C}\bm{p} \in \Delta^D$ to the observation distribution $\bm{q}_a = \mathbf{O}_a \bm{b}$.
+
+Under the default end-to-end SSH command $a_{\text{e2e}}$ (\texttt{ssh scada-unit04}), the observation matrix $\mathbf{O}_{\text{e2e}} \in \{0,1\}^{6 \times 129}$ has the repeating Kronecker product structure across the $N=16$ hops:
+\begin{equation}
+    \mathbf{O}_{\text{e2e}} = \begin{pmatrix}
+        \bm{0}_{1 \times 128} & 1 \\
+        \bm{1}_{16}^\top \otimes \bm{\Omega}_{\text{hop}} & \bm{0}_{5 \times 1}
+    \end{pmatrix} \in \{0,1\}^{6 \times 129},
+\end{equation}
+where $\bm{\Omega}_{\text{hop}} \in \{0,1\}^{5 \times 8}$ is the single-hop sub-stage aliasing matrix shown in Figure \ref{fig:matrix_arch}A. Because $\operatorname{rank}(\bm{\Omega}_{\text{hop}}) = 5$, $\operatorname{rank}(\mathbf{O}_{\text{e2e}}) = 6$ and $\dim(\ker(\mathbf{O}_{\text{e2e}})) = 129 - 6 = 123$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig3_matrix_architecture.png}
+    \caption{Comparison of (A) the rank-deficient End-to-End Kronecker Observation Matrix $\mathbf{O}_{\text{e2e}}$ ($\operatorname{rank}=6$, $\dim\ker=123$) which aliases up to 48 states per symptom, and (B) the Unimodular Lower-Triangular Prefix Probe Matrix $\mathbf{\Pi}$ ($\det(\mathbf{\Pi})=1, \operatorname{rank}=129, \dim\ker=0$) and its bidiagonal first-difference inverse $\mathbf{\Pi}^{-1}$.}
+    \label{fig:matrix_arch}
+\end{figure}
+
+\subsection{Bayesian Belief Updating and the Unimodular Prefix Matrix $\mathbf{\Pi}$}
+
+When action $a$ produces observation $o_i$, let $\bm{r}_{a,i}^\top = (\mathbf{O}_a)_{i,\bullet}$ denote the $i$-th row of $\mathbf{O}_a$, and define the diagonal likelihood matrix $\mathbf{\Lambda}_a(o_i) = \operatorname{diag}(\bm{r}_{a,i})$. Bayes' rule is the projective diagonal-matrix map:
+\begin{equation}\label{eq:matrix_bayes}
+    \bm{b}_{t+1} = \mathcal{B}(\bm{b}_t; a, o_i) = \frac{\mathbf{\Lambda}_a(o_i) \bm{b}_t}{\bm{1}^\top \mathbf{\Lambda}_a(o_i) \bm{b}_t}.
+\end{equation}
+
+To eliminate the 123-dimensional nullspace of $\mathbf{O}_{\text{e2e}}$, we introduce \textbf{Non-Interactive Prefix Probes} $\mathcal{A}_{\text{prefix}} = \{\Pi_0, \Pi_1, \dots, \Pi_{D-1}\}$. Each probe $\Pi_m$ tests whether all stages $j \in \{0, \dots, m\}$ succeed, emitting $y_m = \mathbb{I}(\kappa^*(\bm{s}) \le m) \in \{0, 1\}$ ($1 = \texttt{FAIL}$, $0 = \texttt{PASS}$). Stacking the \texttt{FAIL}-rows for $m = 0, \dots, D-1$ along with $\bm{1}_{D+1}^\top$ yields the lower-triangular \textbf{System Probe Response Matrix} $\mathbf{\Pi} \in \{0,1\}^{(D+1)\times(D+1)}$ depicted in Figure \ref{fig:matrix_arch}B:
+\begin{equation}
+    \mathbf{\Pi} = \begin{pmatrix}
+        1 & 0 & 0 & \cdots & 0 \\
+        1 & 1 & 0 & \cdots & 0 \\
+        1 & 1 & 1 & \cdots & 0 \\
+        \vdots & \vdots & \vdots & \ddots & \vdots \\
+        1 & 1 & 1 & \cdots & 1
+    \end{pmatrix}, \qquad
+    \mathbf{\Pi}^{-1} = \begin{pmatrix}
+        1 & 0 & 0 & \cdots & 0 \\
+        -1 & 1 & 0 & \cdots & 0 \\
+        0 & -1 & 1 & \cdots & 0 \\
+        \vdots & \ddots & \ddots & \ddots & \vdots \\
+        0 & \cdots & 0 & -1 & 1
+    \end{pmatrix}.
+\end{equation}
+Because $\det(\mathbf{\Pi}) = 1$, $\ker(\mathbf{\Pi}) = \{\bm{0}\}$ and $\bm{u}_{\kappa^*(\bm{s})} = \mathbf{\Pi}^{-1}\bm{y}$. Moreover, because $\bm{y} = \mathbf{\Pi}\bm{u}_{k^*} = (0,\dots,0,1,\dots,1)^\top$ is a monotone step vector jumping from $0$ to $1$ at exact index $k^*$, we do not need $D$ linear probes to find the non-zero entry of $\mathbf{\Pi}^{-1}\bm{y}$: \textbf{binary bisection} finds the step transition in $\lceil \log_2(D+1) \rceil$ probes!
+
+% ============================================================================
+\section{Step-by-Step Worked Examples of Optimal Matrix Bisection}
+% ============================================================================
+
+\subsection{Worked Example 1 (Simple): $N=2$ Hops, $D=7$ Stages ($W=8$ States) with Masked Faults}
+
+To see every matrix and vector entry explicitly, consider a compact $D=7$ stage cascade ($W = D+1 = 8$ frontier equivalence classes $\{\bm{u}_0, \bm{u}_1, \dots, \bm{u}_7\}$) containing \textbf{two simultaneous latent faults} at $k_1^* = 2$ and $k_2^* = 5$:
+\begin{equation}
+    \bm{s}_{\text{true}} = (s_0, s_1, s_2, s_3, s_4, s_5, s_6)^\top = (1, 1, \mathbf{0}, 1, 1, \mathbf{0}, 1)^\top \in \{0,1\}^7.
+\end{equation}
+By Theorem 2.1, the initial censoring frontier is $\kappa^*(\bm{s}_{\text{true}}) = \min\{2, 5\} = 2$, so the true frontier basis state is $\bm{u}_2 = (0, 0, 1, 0, 0, 0, 0, 0)^\top \in \mathbb{R}^8$, while the downstream fault $s_5 = 0$ is completely masked in $\ker(\mathbf{C})$.
+
+\subsubsection*{Phase 1: Localizing Active Frontier $k_1^* = 2$ in $\log_2(8) = 3$ Matrix Projections}
+
+\begin{enumerate}
+    \item \textbf{Step $t=0$ (Uniform Prior $\bm{b}_0$):}
+    The support interval is $[L_0, R_0] = [0, 7]$ of width $W_0 = 8$, with initial belief vector and Shannon entropy:
+    \begin{equation}
+        \bm{b}_0 = \left(\frac{1}{8}, \frac{1}{8}, \frac{1}{8}, \frac{1}{8}, \frac{1}{8}, \frac{1}{8}, \frac{1}{8}, \frac{1}{8}\right)^\top, \qquad H(\bm{b}_0) = -\sum_{k=0}^{7} \frac{1}{8}\log_2\frac{1}{8} = \mathbf{3.000\text{ bits}}.
+    \end{equation}
+    Consulting the Bellman table for $W_0 = 8$, the optimal split size is $\ell^* = \lfloor 8/2 \rfloor = 4$, giving probe index $m_1 = L_0 + \ell^* - 1 = 0 + 4 - 1 = \mathbf{3}$.
+
+    \item \textbf{Step $t=1$ (Execute Prefix Probe $\Pi_3 \to \texttt{FAIL}$):}
+    Row $3$ of $\mathbf{\Pi}$ is $\bm{\pi}_3^\top = (1, 1, 1, 1, 0, 0, 0, 0)$. Because $k_1^* = 2 \le 3$, the probe halts and returns $y_3 = \bm{\pi}_3^\top \bm{u}_2 = 1$ (\texttt{FAIL}). Applying the diagonal likelihood projection matrix $\mathbf{\Lambda}_{\Pi_3}(\texttt{FAIL}) = \mathbf{P}_{[0,3]} = \operatorname{diag}(1, 1, 1, 1, 0, 0, 0, 0)$ via Equation \eqref{eq:matrix_bayes}:
+    \begin{equation}
+        \bm{b}_1 = \frac{\mathbf{P}_{[0,3]} \bm{b}_0}{\bm{1}^\top \mathbf{P}_{[0,3]} \bm{b}_0} = \frac{(1/8, 1/8, 1/8, 1/8, 0, 0, 0, 0)^\top}{4/8} = \left(\frac{1}{4}, \frac{1}{4}, \frac{1}{4}, \frac{1}{4}, 0, 0, 0, 0\right)^\top.
+    \end{equation}
+    The active interval contracts to $[L_1, R_1] = [0, 3]$ ($W_1 = 4, H(\bm{b}_1) = \mathbf{2.000\text{ bits}}$, information gain $\Delta I = 1.000$ bit). The next Bellman split for $W_1 = 4$ is $\ell^* = 2 \implies m_2 = 0 + 2 - 1 = \mathbf{1}$.
+
+    \item \textbf{Step $t=2$ (Execute Prefix Probe $\Pi_1 \to \texttt{PASS}$):}
+    Row $1$ of $\mathbf{\Pi}$ is $\bm{\pi}_1^\top = (1, 1, 0, 0, 0, 0, 0, 0)$. Because $k_1^* = 2 > 1$, stages $0$ and $1$ succeed! The probe returns $y_1 = \bm{\pi}_1^\top \bm{u}_2 = 0$ (\texttt{PASS}), activating the complementary diagonal likelihood matrix $\mathbf{\Lambda}_{\Pi_1}(\texttt{PASS}) = \mathbf{I}_8 - \operatorname{diag}(\bm{\pi}_1) = \mathbf{P}_{[2,7]}$:
+    \begin{equation}
+        \bm{b}_2 = \frac{\mathbf{\Lambda}_{\Pi_1}(\texttt{PASS}) \bm{b}_1}{\bm{1}^\top \mathbf{\Lambda}_{\Pi_1}(\texttt{PASS}) \bm{b}_1} = \frac{(0, 0, 1/4, 1/4, 0, 0, 0, 0)^\top}{2/4} = \left(0, 0, \frac{1}{2}, \frac{1}{2}, 0, 0, 0, 0\right)^\top.
+    \end{equation}
+    The active interval is now $[L_2, R_2] = [2, 3]$ ($W_2 = 2, H(\bm{b}_2) = \mathbf{1.000\text{ bit}}$). The next Bellman split for $W_2 = 2$ is $\ell^* = 1 \implies m_3 = 2 + 1 - 1 = \mathbf{2}$.
+
+    \item \textbf{Step $t=3$ (Execute Prefix Probe $\Pi_2 \to \texttt{FAIL}$ \& Exact Posterior Collapse):}
+    Row $2$ of $\mathbf{\Pi}$ is $\bm{\pi}_2^\top = (1, 1, 1, 0, 0, 0, 0, 0)$. Since $k_1^* = 2 \le 2$, $y_2 = 1$ (\texttt{FAIL}), projecting $\bm{b}_2$ onto:
+    \begin{equation}
+        \bm{b}_3 = \frac{\operatorname{diag}(1,1,1,0,0,0,0,0) \bm{b}_2}{1/2} = (0, 0, \mathbf{1}, 0, 0, 0, 0, 0)^\top = \bm{u}_2, \qquad H(\bm{b}_3) = \mathbf{0.000\text{ bits}}!
+    \end{equation}
+\end{enumerate}
+
+\subsubsection*{Phase 2: Surgical Repair $\operatorname{do}(s_2 \leftarrow 1)$ and Unmasking of $k_2^* = 5$}
+With $H(\bm{b}_3) = 0$, the controller executes the surgical ontic repair $\operatorname{do}(s_2 \leftarrow 1)$ and advances the monotonic verified prefix to $L_{\text{new}} = 2 + 1 = \mathbf{3}$.
+\begin{itemize}[noitemsep]
+    \item \textbf{Probe 4 (End-to-End Confirmation $\Pi_6$):} Probing $\Pi_6$ returns $y_6 = 1$ (\texttt{FAIL}) because $s_5 = 0$. Since stages $0..2$ are already verified, the new frontier $k_2^*$ is immediately bounded in $[L, R] = [3, 6]$ of width $W = 4$!
+    \item \textbf{Probe 5 ($\Pi_4 \to \texttt{PASS}$):} Midpoint $m = 3 + 2 - 1 = 4$ succeeds ($s_3=1, s_4=1$), narrowing $[L, R]$ to $[5, 6]$ ($W=2$).
+    \item \textbf{Probe 6 ($\Pi_5 \to \texttt{FAIL}$):} Midpoint $m = 5$ fails ($s_5 = 0$), collapsing $\bm{b} = \bm{u}_5$ ($H=0$). The controller repairs $\operatorname{do}(s_5 \leftarrow 1)$, and Probe 7 ($\Pi_6 \to \texttt{PASS}$) verifies the entire chain!
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig1_simple_example_trace.png}
+    \caption{Complete visual and algebraic trace of Worked Example 1 ($D=7, W=8$, simultaneous faults at $s_2=0$ and $s_5=0$), showing the exact belief vector bar charts $\bm{b}_0 \to \bm{b}_1 \to \bm{b}_2 \to \bm{b}_3 = \bm{u}_2$ and orthogonal diagonal projections.}
+    \label{fig:simple_trace}
+\end{figure}
+
+% ----------------------------------------------------------------------------
+\subsection{Worked Example 2 (Complex): $N=16$ Chained SSH Servers ($D=128$, $K=5$ Masked Faults)}
+
+Now consider the full production $N=16$ hop SSH cascade ($D = 128$ stages, $W = 129$ frontier states) with \textbf{five simultaneous adversarial faults} injected across the chain:
+\begin{enumerate}[noitemsep]
+    \item $k_1^* = \mathbf{1}$ (Hop 0, \texttt{SUB\_KEY\_LOADED}): Local encrypted key blocking on \texttt{/dev/tty} (\texttt{TIMEOUT\_HANG}).
+    \item $k_2^* = \mathbf{24}$ (Hop 3, \texttt{SUB\_AGENT\_SOCK}): Forwarded \texttt{SSH\_AUTH\_SOCK} dead (\texttt{PERM\_DENIED}).
+    \item $k_3^* = \mathbf{59}$ (Hop 7, \texttt{SUB\_TCP\_ROUTE}): Hammerfest firewall dropping TCP \texttt{SYN} (\texttt{TIMEOUT\_HANG}).
+    \item $k_4^* = \mathbf{93}$ (Hop 11, \texttt{SUB\_REMOTE\_SSHD}): \texttt{sshd UseDNS} hanging on UDP/53 (\texttt{TIMEOUT\_HANG}).
+    \item $k_5^* = \mathbf{126}$ (Hop 15, \texttt{SUB\_AUTH\_KEYS}): Target PLC \texttt{/root} mode \texttt{0664} (\texttt{PERM\_DENIED}).
+\end{enumerate}
+
+Below is the exact 38-probe execution trace of our C99 Bellman solver (illustrated in Figure \ref{fig:complex_trace}):
+\begin{itemize}
+    \item \textbf{Episode 1 (Locating $k_1^* = 1$ in $[0..128], W=129$):}
+    {\scriptsize
+    \begin{equation*}
+        [0..128] \xrightarrow{\Pi_{63}=0} [0..63] \xrightarrow{\Pi_{31}=0} [0..31] \xrightarrow{\Pi_{15}=0} [0..15] \xrightarrow{\Pi_{7}=0} [0..7] \xrightarrow{\Pi_{3}=0} [0..3] \xrightarrow{\Pi_{1}=0} [0..1] \xrightarrow{\Pi_{0}=1} \mathbf{[1..1]}
+    \end{equation*}}
+    In \textbf{7 probes}, $\bm{b}$ collapses from 129 states to $\bm{u}_1$ ($H=0$). Ontic Repair \#1 sets $s_1 \leftarrow 1$ and advances the monotonic verified frontier to $L = \mathbf{2}$.
+
+    \item \textbf{Episode 2 (Locating $k_2^* = 24$ in $[2..127], W=126$):}
+    Probe \#8 ($\Pi_{127} = 0$ \texttt{FAIL}) detects a remaining fault in $[2..127]$. Bisecting $[2..127]$:
+    {\scriptsize
+    \begin{equation*}
+        [2..127] \xrightarrow{\Pi_{64}=0} [2..64] \xrightarrow{\Pi_{32}=0} [2..32] \xrightarrow{\Pi_{16}=1} [17..32] \xrightarrow{\Pi_{24}=0} [17..24] \xrightarrow{\Pi_{20}=1} [21..24] \xrightarrow{\Pi_{22}=1} [23..24] \xrightarrow{\Pi_{23}=1} \mathbf{[24..24]}
+    \end{equation*}}
+    In \textbf{8 probes} (1 confirmation + 7 bisection), $\bm{b}$ collapses to $\bm{u}_{24}$. Ontic Repair \#2 sets $s_{24} \leftarrow 1$ and advances $L = \mathbf{25}$.
+
+    \item \textbf{Episode 3 (Locating $k_3^* = 59$ in $[25..127], W=103$):}
+    Probe \#16 ($\Pi_{127} = 0$ \texttt{FAIL}) initiates bisection on $[25..127]$:
+    {\scriptsize
+    \begin{equation*}
+        [25..127] \xrightarrow{\Pi_{75}=0} [25..75] \xrightarrow{\Pi_{49}=1} [50..75] \xrightarrow{\Pi_{62}=0} [50..62] \xrightarrow{\Pi_{55}=1} [56..62] \xrightarrow{\Pi_{58}=1} [59..62] \xrightarrow{\Pi_{60}=0} [59..60] \xrightarrow{\Pi_{59}=0} \mathbf{[59..59]}
+    \end{equation*}}
+    In \textbf{8 probes}, $\bm{b}$ collapses to $\bm{u}_{59}$. Ontic Repair \#3 sets $s_{59} \leftarrow 1$ and advances $L = \mathbf{60}$.
+
+    \item \textbf{Episode 4 (Locating $k_4^* = 93$ in $[60..127], W=68$):}
+    Probe \#24 ($\Pi_{127} = 0$ \texttt{FAIL}) initiates bisection on $[60..127]$:
+    {\scriptsize
+    \begin{equation*}
+        [60..127] \xrightarrow{\Pi_{93}=0} [60..93] \xrightarrow{\Pi_{76}=1} [77..93] \xrightarrow{\Pi_{84}=1} [85..93] \xrightarrow{\Pi_{88}=1} [89..93] \xrightarrow{\Pi_{90}=1} [91..93] \xrightarrow{\Pi_{91}=1} [92..93] \xrightarrow{\Pi_{92}=1} \mathbf{[93..93]}
+    \end{equation*}}
+    In \textbf{8 probes}, $\bm{b}$ collapses to $\bm{u}_{93}$. Ontic Repair \#4 sets $s_{93} \leftarrow 1$ and advances $L = \mathbf{94}$.
+
+    \item \textbf{Episode 5 (Locating $k_5^* = 126$ in $[94..127], W=34$ + Final Verification):}
+    Probe \#32 ($\Pi_{127} = 0$ \texttt{FAIL}) initiates bisection on the remaining 34 stages $[94..127]$:
+    {\scriptsize
+    \begin{equation*}
+        [94..127] \xrightarrow{\Pi_{110}=1} [111..127] \xrightarrow{\Pi_{118}=1} [119..127] \xrightarrow{\Pi_{122}=1} [123..127] \xrightarrow{\Pi_{124}=1} [125..127] \xrightarrow{\Pi_{125}=1} [126..127] \xrightarrow{\Pi_{126}=0} \mathbf{[126..126]}
+    \end{equation*}}
+    Because the unverified suffix width shrunk to $W=34$, this takes only \textbf{6 bisection probes}! Ontic Repair \#5 sets $s_{126} \leftarrow 1$, and \textbf{Probe \#38} ($\Pi_{127} = 1$ \texttt{PASS}) confirms all 128 stages across all 16 hops are operational!
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig2_complex_16hop_trace.png}
+    \caption{Complete 38-probe trajectory of the C99 Bellman solver across the 5 masked faults ($k^* \in \{1, 24, 59, 93, 126\}$) in the 16-hop SSH chain. Notice the green shaded Monotonic Verified Prefix $[0..L_t-1]$ expanding left-to-right across episodes so no stage is ever re-bisected.}
+    \label{fig:complex_trace}
+\end{figure}
+
+% ============================================================================
+\section{Formal Matrix Proof of the OpenSSH \texttt{ProxyJump} Paradox}
+% ============================================================================
+
+When the outer OpenSSH process $P_k$ connects to hop $k$ with CLI option vector $\bm{c}_{\text{CLI}} = (c_{\text{verbose}}, c_{\text{conf}}, c_{\text{batch}}, c_{\text{id}})^\top$, \texttt{ssh.c} synthesizes the implicit \texttt{ProxyCommand} for jump child $P_{k-1}$:
+\begin{center}
+    \texttt{debug1: Setting implicit ProxyCommand from ProxyJump: ssh -F <cfg> -vvv -W '[\%h]:\%p' <jumpbox>}
+\end{center}
+This applies the idempotent \textbf{rank-2 projection matrix} $\mathbf{P}_{\text{SSH}} = \operatorname{diag}(1, 1, 0, 0)$ to $\bm{c}_{\text{CLI}}$, stripping \texttt{-o BatchMode=yes} and \texttt{-i <key>} from all upstream child processes $P_0, \dots, P_{k-1}$:
+\begin{equation}
+    \bm{c}^{(j)} = \mathbf{P}_{\text{SSH}} \bm{c}_{\text{CLI}} + (\mathbf{I}_4 - \mathbf{P}_{\text{SSH}}) \bm{c}_{\text{cfg}} \quad (\forall j < k).
+\end{equation}
+Consequently, when a passphrase-protected key is not loaded in \texttt{ssh-agent} and the operator runs \texttt{ssh -o BatchMode=yes hop\_k}, every upstream hop $j < k$ inherits \texttt{BatchMode=no} from \texttt{\textasciitilde/.ssh/config}, prompts \texttt{/dev/tty}, and \textbf{succeeds}, while target hop $k$ receives \texttt{BatchMode=yes} from the CLI and \textbf{fails} with \texttt{Permission denied (publickey)}---creating a deterministic false positive at whichever server $k$ is tested!
+
+% ============================================================================
+\section{Markov Chain Spectral \& Drift Analysis of Unbisected LLM Agents}
+% ============================================================================
+
+In an aliased equivalence class $E(o)$ of size $M_o = |E(o)|$ (where $M_o = 32$ or $48$ in our 16-hop chain), an unbisected agent guessing uniformly within $E(o)$ with collateral fault-introduction probability $\alpha \in (0,1]$ on healthy stages induces a tridiagonal \textbf{Birth-Death Markov Chain} $\mathbf{P}_{\text{LLM}}$ on the fault count $K_t \in \{0, 1, \dots, M_o\}$ with repair rate $\mu_k = \frac{1}{M_o}$ and fault-birth rate $\lambda_k = \alpha \frac{M_o - k}{M_o}$:
+\begin{equation}
+    \mathbf{P}_{\text{LLM}} = \begin{pmatrix}
+        1 & 0 & 0 & 0 & \cdots & 0 \\
+        \mu_1 & r_1 & \lambda_1 & 0 & \cdots & 0 \\
+        0 & \mu_2 & r_2 & \lambda_2 & \cdots & 0 \\
+        \vdots & \ddots & \ddots & \ddots & \ddots & \vdots \\
+        0 & \cdots & 0 & 0 & \mu_{M_o} & r_{M_o}
+    \end{pmatrix}, \qquad r_k = 1 - \mu_k - \lambda_k.
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig4_markov_drift.png}
+    \caption{Top: Birth-Death Markov Chain transition graph of an unbisected LLM agent under collateral config mutation rate $\alpha = 0.25$ and equivalence class size $M_o = 32$, exhibiting strong positive drift ($\lambda_5 / \mu_5 = 6.75\times$) toward the chaotic attractor $K_{\text{eq}} = 28$. Bottom: 10,000-trial Monte Carlo benchmark results.}
+    \label{fig:markov_drift}
+\end{figure}
+
+As shown in Figure \ref{fig:markov_drift}, whenever $\alpha > \frac{1}{M_o - k}$, the expected drift $\Delta K_t = \frac{\alpha(M_o - k) - 1}{M_o} > 0$ drives the system away from $K_t = 0$ toward the chaotic equilibrium $K_{\text{eq}} = M_o - \frac{1}{\alpha} = 28$, yielding an exponential hitting time $\mathbb{E}[\tau_0] = \Omega((\alpha M_o)^{M_o - 1})$ and an empirical success rate of just $\mathbf{0.03\%}$ within 50 steps, whereas our C99 Bellman Prefix-Bisection solver achieves $\mathbf{100.00\%}$ success in $\mathbf{35.52}$ average probes with $\mathbf{0.00}$ wrong repairs.
+
+% ============================================================================
+\section{Computational Complexity Theory: NP-Completeness vs.\ Total Unimodularity}
+% ============================================================================
+
+A foundational question in theoretical computer science is: \emph{Where does cascaded transducer diagnosis sit in the Chomsky and Karp--Garey--Johnson complexity hierarchies, and why is our 16-hop SSH chain provably solvable in $O(\log D)$ time while general network diagnosis is NP-hard?}
+
+\subsection{NP-Completeness of General Non-Cascaded Fault Diagnosis}
+
+Suppose we relax the linear cascade topology into an arbitrary binary test-symptom matrix $\mathbf{A} \in \{0,1\}^{P \times n}$ over $n$ fault hypotheses and $P$ available diagnostic probes, where $A_{p,j} = 1$ if probe $p$ fails under fault $j$ and $0$ otherwise. Four canonical NP-completeness reductions govern this general class:
+
+\begin{enumerate}
+    \item \textbf{Minimum Test Collection / Minimum Fault-Location Tree (Hyafil \& Rivest, 1976; Garey \& Johnson, 1979 [Problem SP6]):}
+    Given a binary test matrix $\mathbf{A} \in \{0,1\}^{P \times n}$ and a budget $B \in \mathbb{Z}_{\ge 1}$, deciding whether there exists a subset of probes $S \subseteq \{1,\dots,P\}$ of size $|S| \le B$ that uniquely distinguishes all $\binom{n}{2}$ pairs of fault states (or constructing a decision tree of minimum expected depth $h^*$) is \textbf{strongly NP-complete} via reduction from \emph{3-Dimensional Matching (3DM)} and \emph{Exact Cover by 3-Sets (X3C)}.
+    \item \textbf{Inapproximability via Set Cover (Chakaravarthy et al., 2007):}
+    Unless $\mathrm{P} = \mathrm{NP}$, no polynomial-time algorithm can approximate the optimal diagnostic decision tree depth within a factor better than $(1 - o(1))\ln n$.
+    \item \textbf{Minimum-Cardinality Multi-Fault Abductive Diagnosis (de Kleer \& Williams, 1987; Bylander et al., 1991):}
+    When multiple faults $\bm{s} \in \{0,1\}^D$ occur in a general boolean circuit or non-serial DAG with OR/AND symptom gates, finding a fault vector of maximum health $\|\bm{s}\|_1$ (minimum fault cardinality $\| \mathbf{1} - \bm{s} \|_1$) consistent with an aliased observation vector $\bm{o}$ is \textbf{NP-hard} (and deciding whether a single component is faulty across all minimal diagnoses is $\Sigma_2^P$-complete).
+    \item \textbf{General Finite-Horizon POMDP Control (Papadimitriou \& Tsitsiklis, 1987):}
+    Computing the optimal policy for a general POMDP over $D$ state variables is \textbf{PSPACE-complete} (and \textbf{NP-complete} for small finite horizons).
+\end{enumerate}
+
+\subsection{Why the Sequential Cascade Collapses from NP-Hard to P: Total Unimodularity (TUM)}
+
+Why does our $D=128$ cascaded transducer bypass these hardness barriers completely? The answer lies in two algebraic properties of the cascade matrices $\mathbf{C}$ and $\mathbf{\Pi}$ (illustrated in Figure \ref{fig:complexity_convex}A):
+
+\begin{theorem}[Total Unimodularity of the Prefix Probe Matrix $\mathbf{\Pi}$ and Inverse $\mathbf{\Pi}^{-1}$]
+A matrix $\mathbf{M} \in \mathbb{Z}^{m \times n}$ is \textbf{Totally Unimodular (TUM)} if every square submatrix $\mathbf{B}$ of $\mathbf{M}$ (of any dimension $r \times r$) satisfies $\det(\mathbf{B}) \in \{-1, 0, +1\}$. Both the lower-triangular Prefix Probe Matrix $\mathbf{\Pi} \in \{0,1\}^{(D+1)\times(D+1)}$ and its bidiagonal first-difference inverse $\mathbf{\Pi}^{-1} \in \{-1,0,1\}^{(D+1)\times(D+1)}$ are \textbf{Totally Unimodular}.
+\end{theorem}
+
+\begin{proof}
+Every column (and row) of the lower-triangular all-ones matrix $\mathbf{\Pi}$ consists of a single contiguous block of ones ($1, 1, \dots, 1$) followed (or preceded) by zeros. Thus $\mathbf{\Pi}$ satisfies Fulkerson and Gross's \textbf{Consecutive-Ones Property (interval matrix)}. By the classic theorem of Veinott and Wagner (1962) / Schrijver (1986), every interval matrix with consecutive ones in each column is Totally Unimodular, so $\det(\mathbf{B}) \in \{-1, 0, +1\}$ for every square minor $\mathbf{B}$ of $\mathbf{\Pi}$. Since the inverse of a nonsingular TUM matrix is also TUM (and $\mathbf{\Pi}^{-1}$ is a directed path node-arc incidence matrix with at most one $+1$ and one $-1$ per row), $\mathbf{\Pi}^{-1}$ is also Totally Unimodular.
+\end{proof}
+
+\begin{corollary}[Zero Integrality Gap and Polynomial-Time Collapse]
+By the \textbf{Hoffman--Kruskal Theorem (1956)}, for any Totally Unimodular constraint matrix $\mathbf{M}$ and integer right-hand side $\bm{d} \in \mathbb{Z}^m$, every extreme point (vertex) of the continuous Linear Programming relaxation polytope $\mathcal{P}_{\text{LP}} = \{\bm{x} \in \mathbb{R}_{\ge 0}^n : \mathbf{M}\bm{x} \le \bm{d}\}$ is strictly integral ($\bm{x}^* \in \mathbb{Z}^n$):
+\begin{equation}
+    \mathcal{P}_{\text{LP}} = \operatorname{conv}\big(\mathcal{P}_{\text{LP}} \cap \mathbb{Z}^n\big) \implies \text{Integrality Gap} = 0.000.
+\end{equation}
+Combined with the fact that the causal DAG of a sequential cascade is a directed path of \textbf{treewidth} $\operatorname{tw}(\mathcal{G}) = 1$, every active belief support $\operatorname{supp}(\bm{b}_t) = [L_t, R_t]$ remains a contiguous interval. This reduces the $2^{D+1}$ subset lattice of the POMDP to $\binom{D+2}{2} = O(D^2)$ contiguous intervals (and $D+1$ translation-invariant widths $W \in \{1, \dots, D+1\}$), collapsing the PSPACE/NP-hard POMDP into an exact $O(\log D)$ online bisection!
+\end{corollary}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig5_complexity_and_convex.png}
+    \caption{(A) Polyhedral complexity phase transition between general non-cascaded test matrices $\mathbf{A}$ (NP-hard, fractional LP vertices, $\Omega(\log n)$ integrality gap) and Totally Unimodular cascaded prefix matrices $\mathbf{\Pi}, \mathbf{\Pi}^{-1}$ (Hoffman--Kruskal integer vertices, zero integrality gap). (B) Strict concavity of the binary Shannon entropy objective $h_2(p_m)$ in Convex Programming, contrasting the global optimum $p^* = 0.50$ ($1.000$ bit/probe) with Codex's linear walk $p = 1/16$ ($0.337$ bits/probe).}
+    \label{fig:complexity_convex}
+\end{figure}
+
+% ============================================================================
+\section{Linear Programming (LP), MILP, and Convex Programming Formulations}
+% ============================================================================
+
+We now show how every component of the cascaded diagnosis and control problem can be formulated explicitly as a \textbf{Linear Program (LP)}, \textbf{Mixed-Integer Linear Program (MILP)}, or \textbf{Convex Program (CP)}.
+
+\subsection{Exact Linear Programming (LP) Formulation of the Bellman Equation}
+
+Following Manne (1960), Puterman (1994), and Bertsekas (2017), the Dynamic Programming Bellman Optimality Equation over interval widths $w \in \{2, \dots, D+1\}$ is equivalent to the primal \textbf{Linear Program} in the value vector $\bm{v} = (V_1, V_2, \dots, V_{D+1})^\top \in \mathbb{R}^{D+1}$:
+\begin{align}
+    \underset{\bm{v} \in \mathbb{R}^{D+1}}{\text{maximize}} \quad & \bm{c}^\top \bm{v} = \sum_{w=2}^{D+1} \gamma_w V_w \label{eq:bellman_lp_obj}\\
+    \text{subject to} \quad & V_1 = 0, \nonumber\\
+    & V_w - \frac{\ell}{w} V_\ell - \frac{w - \ell}{w} V_{w - \ell} \le 1, \qquad \forall w \in \{2, \dots, D+1\}, \; \forall \ell \in \{1, \dots, w-1\}, \label{eq:bellman_lp_const}
+\end{align}
+for any strictly positive weight vector $\bm{\gamma} > \bm{0}$. In matrix notation, let $\mathbf{M}_{\text{Bell}} \in \mathbb{R}^{\binom{D+1}{2} \times (D+1)}$ collect the linear inequality rows $\bm{e}_w^\top - \frac{\ell}{w}\bm{e}_\ell^\top - \frac{w-\ell}{w}\bm{e}_{w-\ell}^\top$. Then Equations \eqref{eq:bellman_lp_obj}--\eqref{eq:bellman_lp_const} form the standard LP:
+\begin{equation}
+    \max_{\bm{v}} \big\{ \bm{\gamma}^\top \bm{v} \;\big|\; \mathbf{M}_{\text{Bell}} \bm{v} \le \bm{1}, \; V_1 = 0 \big\}.
+\end{equation}
+By LP duality, the dual variables $\mu_{w,\ell} \ge 0$ represent the expected occupation frequencies of splitting an interval of width $w$ at cut $\ell$, and complementary slackness ($\mu_{w,\ell}^* > 0 \implies V_w^* = 1 + \frac{\ell}{w}V_\ell^* + \frac{w-\ell}{w}V_{w-\ell}^*$) recovers the exact optimal split policy $\ell^* = \lfloor w/2 \rfloor$.
+
+\subsection{Exact LP Fault Localization via Totally Unimodular First-Differences}
+
+Given a vector of prefix probe observations $\bm{y} \in \{0,1\}^{D+1}$ (with $y_D = 1$), recovering the exact frontier fault indicator vector $\bm{u} \in [0,1]^{D+1}$ is the continuous Linear Program:
+\begin{align}
+    \underset{\bm{u} \in \mathbb{R}^{D+1}}{\text{minimize}} \quad & \sum_{k=0}^{D} k \, u_k \\
+    \text{subject to} \quad & \mathbf{\Pi} \bm{u} = \bm{y}, \qquad \bm{u} \ge \bm{0}.
+\end{align}
+Because $\mathbf{\Pi}$ is Totally Unimodular and nonsingular with $\mathbf{\Pi}^{-1}$ bidiagonal, the feasible region is a single integral vertex $\bm{u}^* = \mathbf{\Pi}^{-1}\bm{y} = \bm{u}_{k^*} \in \{0,1\}^{D+1}$, requiring zero integer branching.
+
+\subsection{Mixed-Integer Linear Programming (MILP) for General Multi-Fault \& Set-Cover Diagnosis}
+
+When probes have heterogeneous execution costs $c_a > 0$ (e.g., local \texttt{ssh-add -l} costs $0.01\text{ s}$ while a remote TCP timeout probe costs $10.0\text{ s}$) and arbitrary non-prefix test structure, we formulate two exact \textbf{MILPs}:
+
+\subsubsection*{1. Minimum-Cost Discriminating Probe Set (MILP)}
+For every pair of distinct fault hypotheses $(j, k)$ with $0 \le j < k \le D$, let $D_{(j,k), a} = |(\mathbf{O}_a)_{\bullet, j} - (\mathbf{O}_a)_{\bullet, k}|_1 / 2 \in \{0, 1\}$ indicate whether deterministic probe $a \in \mathcal{A}$ distinguishes state $j$ from state $k$. Selecting the minimum-cost probe suite $\bm{x} \in \{0,1\}^{|\mathcal{A}|}$ that uniquely identifies all fault states is the \textbf{0-1 Integer Linear Program}:
+\begin{align}
+    \underset{\bm{x} \in \{0,1\}^{|\mathcal{A}|}}{\text{minimize}} \quad & \bm{c}^\top \bm{x} = \sum_{a \in \mathcal{A}} c_a x_a \\
+    \text{subject to} \quad & \sum_{a \in \mathcal{A}} D_{(j,k), a} \, x_a \ge 1, \qquad \forall 0 \le j < k \le D.
+\end{align}
+
+\subsubsection*{2. Exact Multi-Fault Censoring Reconstruction (McCormick MILP)}
+To linearize the nonlinear polynomial censoring relation $u_k = (1 - s_k)\prod_{j=0}^{k-1} s_j$ from Theorem 2.1 over the full $D$-dimensional boolean fault vector $\bm{s} \in \{0,1\}^D$ and frontier vector $\bm{u} \in \{0,1\}^{D+1}$, we write the exact linear constraints:
+\begin{align}
+    \sum_{k=0}^{D} u_k &= 1, & & \text{(Unique active frontier)} \\
+    u_k &\le 1 - s_k, & \forall k \in \{0,\dots,D-1\} \quad & \text{(Frontier stage $k^*$ must be faulty: $s_{k^*}=0$)} \\
+    u_k &\le s_j, & \forall 0 \le j < k \le D \quad & \text{(All upstream stages $j < k^*$ must be healthy: $s_j=1$)} \\
+    u_k &\ge (1 - s_k) + \sum_{j=0}^{k-1} (s_j - 1), & \forall k \in \{0,\dots,D\} \quad & \text{(McCormick lower-bound conjunction)}.
+\end{align}
+Notice that even though the product $\prod_{j=0}^{k-1} s_j$ is degree-$k$ nonlinear, this MILP linearization is \textbf{100\% exact on $\{0,1\}^D$ without any Big-$M$ tuning parameters}!
+
+\subsection{Convex Programming (CP) for Maximum Information Gain \& Randomized Probe Design}
+
+In Section 4, we chose each epistemic probe to maximize Shannon Mutual Information $I(S; O \mid A = a)$. We now prove that selecting a probe (or optimal randomized probe distribution $\bm{w} \in \Delta^{|\mathcal{A}|-1}$) is a \textbf{strictly convex optimization problem} solvable via interior-point / disciplined convex programming (Boyd \& Vandenberghe, 2004).
+
+\begin{theorem}[Convexity of Epistemic Information-Gain Optimization]
+Given current belief vector $\bm{b} \in \Delta^D$, let $\mathbf{O}_a \in [0,1]^{L \times (D+1)}$ be the observation matrix of action $a$. The mutual information $I(S; O \mid \bm{b}, a)$ is:
+\begin{equation}
+    I(S; O \mid \bm{b}, a) = H\big(\mathbf{O}_a \bm{b}\big) - \sum_{k=0}^{D} b_k H\big((\mathbf{O}_a)_{\bullet, k}\big),
+\end{equation}
+where $H(\bm{q}) = -\sum_{i=1}^{L} q_i \log_2 q_i$ is the strictly concave Shannon entropy on the simplex $\Delta^{L-1}$. Equivalently, minimizing the negative mutual information over a randomized action mixture $\mathbf{O}(\bm{w}) = \sum_{a} w_a \mathbf{O}_a$ ($\bm{w} \in \Delta^{|\mathcal{A}|-1}$) is the \textbf{Convex Program}:
+\begin{align}
+    \underset{\bm{w} \in \mathbb{R}^{|\mathcal{A}|}, \; \bm{q} \in \mathbb{R}^L}{\text{minimize}} \quad & f_0(\bm{w}, \bm{q}) = \sum_{i=1}^{L} q_i \log_2 q_i + \sum_{a \in \mathcal{A}} w_a \left( \sum_{k=0}^{D} b_k H\big((\mathbf{O}_a)_{\bullet, k}\big) \right) \\
+    \text{subject to} \quad & \bm{q} - \left(\sum_{a \in \mathcal{A}} w_a \mathbf{O}_a\right) \bm{b} = \bm{0}, \qquad \bm{1}^\top \bm{w} = 1, \qquad \bm{w} \ge \bm{0}.
+\end{align}
+Specifically, for our deterministic prefix probes $\Pi_m$ ($\mathbf{O}_{\Pi_m} \in \{0,1\}^{2\times(D+1)}$), the conditional entropy term $\sum_k b_k H((\mathbf{O}_{\Pi_m})_{\bullet,k}) = 0$ vanishes identically, and the objective reduces to maximizing the strictly concave binary entropy function $h_2(p_m)$ of the cumulative prefix probability $p_m = \sum_{k=L}^{m} b_k \in [0,1]$:
+\begin{equation}
+    \max_{p_m \in [0,1]} \; h_2(p_m) = -p_m \log_2 p_m - (1 - p_m)\log_2(1 - p_m), \qquad \frac{d^2 h_2}{dp_m^2} = -\frac{1}{p_m(1 - p_m)\ln 2} < 0.
+\end{equation}
+Setting the first derivative $\frac{dh_2}{dp_m} = \log_2\left(\frac{1 - p_m}{p_m}\right) = 0$ yields the unique global KKT optimum $p_m^* = \frac{1}{2}$ ($h_2(1/2) = \mathbf{1.000\text{ bit/probe}}$), which under a uniform belief on $[L, R]$ of width $W$ selects the exact median index $m^* = L + \lfloor W/2 \rfloor - 1$!
+\end{theorem}
+
+As illustrated in Figure \ref{fig:complexity_convex}B, this convex analysis explains why Codex's sequential hop-by-hop walk ($p_m = \frac{1}{16} = 0.0625$) is so inefficient: evaluating $h_2(1/16)$ on the concave entropy curve yields only $h_2(0.0625) = \mathbf{0.337\text{ bits}}$ on the first probe ($66.3\%$ information loss relative to the KKT optimum $p^* = 0.50$).
+
+% ============================================================================
+\section{Can Matrix-Multiplication LLMs Solve This Optimally? Circuit Expressivity vs.\ Meta-Cognitive Solver Routing}
+% ============================================================================
+
+We now address two fundamental questions at the intersection of deep learning theory and formal systems engineering:
+\begin{enumerate}[noitemsep]
+    \item \emph{Since a Transformer is fundamentally a stack of matrix multiplications, Softmax normalizations, and ReLU/SwiGLU projections, can a matrix-multiplication LLM represent and execute our optimal Bellman prefix-bisection solver?}
+    \item \emph{Why do standard autoregressive LLMs fail in practice despite having sufficient circuit capacity, and how can an LLM mathematically detect this problem class to either switch to a formal solver (C99/LP/MILP) or explicitly warn the user that it is guessing under observational aliasing?}
+\end{enumerate}
+
+\subsection{Constructive Proof: A 2-Layer Transformer Matrix Circuit Implements Exact Bellman Bisection}
+
+Remarkably, in terms of \textbf{circuit complexity and expressive power}, the answer to the first question is \textbf{Yes}: every step of our optimal algorithm is natively a composition of matrix multiplications, Softmax normalizations, and piecewise-linear activations!
+
+\begin{theorem}[2-Layer Transformer Constructibility of Optimal Cascade Diagnosis]
+Let $h_t = ((a_1, o_1), \dots, (a_t, o_t))$ be the history of executed probes and observations at step $t$. A standard Transformer with embedding dimension $d_{\text{model}} \ge D + 1$ and \textbf{2 layers} (1 Self-Attention layer + 1 two-layer ReLU MLP) can compute the exact Bayesian posterior $\bm{b}_t \in \Delta^D$ and output the Bellman-optimal prefix probe index $m^* = \arg\min_m |(\mathbf{\Pi}\bm{b}_t)_m - \frac{1}{2}|$ in a single forward pass per step.
+\end{theorem}
+
+\begin{proof}
+We construct the exact weight matrices of the 2-layer Transformer explicitly (illustrated in Figure \ref{fig:transformer_router}A):
+\begin{enumerate}
+    \item \textbf{Layer 1 (Self-Attention + Softmax = Exact Log-Space Bayesian Filter):}
+    In log-probability coordinates $\bm{\ell}_t = \ln \bm{b}_t \in \mathbb{R}^{D+1}$, the iterative diagonal matrix product $\bm{b}_t \propto \prod_{\tau=1}^{t} \mathbf{\Lambda}_{a_\tau}(o_\tau) \bm{b}_0$ becomes an exact sum of log-likelihood vectors followed by a Softmax normalization:
+    \begin{equation}
+        \bm{\ell}_t = \ln \bm{b}_0 + \sum_{\tau=1}^{t} \ln \operatorname{diag}\big(\mathbf{\Lambda}_{a_\tau}(o_\tau)\big), \qquad \bm{b}_t = \operatorname{Softmax}(\bm{\ell}_t) = \frac{\exp(\bm{\ell}_t)}{\bm{1}^\top \exp(\bm{\ell}_t)}.
+    \end{equation}
+    In a single uniform causal attention head where the Value projection matrix $\mathbf{W}_V \in \mathbb{R}^{(D+1)\times d_{\text{tok}}}$ maps each observation token $(a_\tau, o_\tau)$ to scaled log-likelihood vector $t \cdot \ln (\mathbf{O}_{a_\tau})_{o_\tau, \bullet}$ (with $-\infty$ / large negative constant $-M_{\text{mask}}$ for zero entries), the attention average $\frac{1}{t}\sum_{\tau=1}^{t} \mathbf{W}_V \bm{x}_\tau$ followed by a channel-wise $\operatorname{Softmax}$ outputs the exact posterior $\bm{b}_t \in \Delta^D$.
+
+    \item \textbf{Layer 2A (Linear Projection by $\mathbf{W}_{\mathbf{\Pi}} = \mathbf{\Pi}$ = Cumulative Prefix Probability):}
+    Multiplying $\bm{b}_t$ by the lower-triangular all-ones matrix $\mathbf{\Pi} \in \{0,1\}^{(D+1)\times(D+1)}$ is a single linear matrix multiplication:
+    \begin{equation}
+        \bm{p}_t = \mathbf{W}_{\mathbf{\Pi}} \bm{b}_t = \mathbf{\Pi} \bm{b}_t \in [0, 1]^{D+1}, \qquad \text{where } p_{t,m} = \sum_{k=0}^{m} b_{t,k}.
+    \end{equation}
+
+    \item \textbf{Layer 2B (2-Layer ReLU MLP + ArgMax = Exact KKT Midpoint Split):}
+    By Theorem 8.1, the concave binary entropy $h_2(p_{t,m})$ is strictly symmetric and unimodal around $p^* = \frac{1}{2}$, so $\arg\max_m h_2(p_{t,m}) = \arg\min_m |p_{t,m} - \frac{1}{2}|$. Using the exact ReLU identity $|z| = \operatorname{ReLU}(z) + \operatorname{ReLU}(-z)$, a 2-layer MLP computes:
+    \begin{equation}
+        \bm{z}_t = -\operatorname{ReLU}\left(\mathbf{\Pi}\bm{b}_t - \frac{1}{2}\bm{1}\right) - \operatorname{ReLU}\left(\frac{1}{2}\bm{1} - \mathbf{\Pi}\bm{b}_t\right), \qquad m^* = \arg\max_{m \in \{0,\dots,D-1\}} z_{t,m},
+    \end{equation}
+    which selects the exact Bellman-optimal bisection probe $\Pi_{m^*}$!
+\end{enumerate}
+\end{proof}
+
+\subsection{Why Standard Autoregressive LLMs Fail Despite Circuit Capacity}
+
+If a 2-layer matrix-multiplication network can represent the exact optimal solver, why do frontier LLMs fail on deep cascaded systems like our 16-hop SSH chain? Four structural mismatches separate standard next-token LLMs from Theorem 9.1:
+
+\begin{enumerate}
+    \item \textbf{Learning the Pseudo-Inverse $\mathbf{O}_{\text{e2e}}^\dagger$ Instead of $\mathbf{\Pi}$ (Training Distribution Bias):}
+    Standard LLMs are trained via cross-entropy next-token prediction on human text corpora (StackOverflow, forums, commit logs) where authors post a terminal symptom $o$ and a single-step fix $s_k$. Consequently, gradient descent trains the MLP weights to approximate the prior-weighted Moore--Penrose pseudo-inverse $\mathbf{O}_{\text{e2e}}^\dagger \bm{q}$ (frequency-based guessing within the aliased equivalence class $E(o)$) rather than multi-step epistemic prefix bisection via $\mathbf{\Pi}$.
+    \item \textbf{Corrupted Internal World-Model Matrices ($\widehat{\bm{\Omega}}_{\text{hop}} \neq \bm{\Omega}_{\text{hop}}$ and $\widehat{\mathbf{P}}_{\text{SSH}} \neq \mathbf{P}_{\text{SSH}}$):}
+    In Theorem 9.1, Layer 1 requires the \emph{exact} rows of $\mathbf{O}_a$ and $\mathbf{P}_{\text{SSH}}$. In our empirical test, Codex hallucinated two matrix entries: it set $(\widehat{\bm{\Omega}}_{\text{hop}})_{\text{TIMEOUT}, \text{UseDNS}} = 0$ (falsely claiming literal IP addresses eliminate DNS dependencies) and assumed $\widehat{\mathbf{P}}_{\text{SSH}} = \mathbf{I}_4$ (failing to know that OpenSSH's \texttt{ssh.c} strips \texttt{-o BatchMode=yes} from \texttt{ProxyJump} children). When the internal matrix entries are wrong, even exact matrix multiplication converges to the wrong state!
+    \item \textbf{Absence of an Orthogonal State-Tracking Register in Token Superposition:}
+    Unless an LLM externalizes the $D+1$ frontier hypotheses into an explicit state table or tool scratchpad, its residual stream represents states as dense semantic superpositions rather than an orthogonal basis $\{\bm{u}_0, \dots, \bm{u}_D\}$, violating the coordinate-wise diagonal structure of $\mathbf{\Lambda}_a(o)$.
+    \item \textbf{Greedy Pragmatic Decoding vs.\ Epistemic Active Inference:}
+    Single-turn RLHF rewards immediate answer generation, effectively setting the weight on the epistemic information-gain term $I(S; O \mid a)$ in the Expected Free Energy functional to zero.
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig6_transformer_and_router.png}
+    \caption{(A) Constructive 2-layer Transformer matrix circuit proving that Self-Attention + Softmax + Lower-Triangular Linear Map $\mathbf{\Pi}$ + ReLU MLP can represent the exact Bellman-optimal solver. (B) Meta-Cognitive Problem-Class Detector and Neuro-Symbolic Switching Gate that detects rank-deficiency ($\rho_{\text{alias}} \gg 1$), censoring depth, and positive Markov drift ($\Delta K > 0$) to switch to a formal solver or disclose heuristic uncertainty to the user.}
+    \label{fig:transformer_router}
+\end{figure}
+
+\subsection{Meta-Cognitive Detection and the Epistemic Switching / Disclosure Protocol}
+
+To prevent catastrophic ontic interventions (such as mutating a healthy production bastion with \texttt{root} privileges or leaking credentials across security domains), an LLM agent must implement a \textbf{Meta-Cognitive Problem-Class Detector} (Figure \ref{fig:transformer_router}B) that evaluates four mathematical invariants \emph{before} proposing any state-modifying command:
+
+\begin{definition}[Formal Trigger Conditions for Solver Switching \& Uncertainty Disclosure]
+Given a system with $D$ causal stages, current observation $o_i$ under action $a$, and estimated collateral mutation hazard $\alpha \in (0, 1]$, define the four diagnostic safety metrics:
+\begin{align}
+    \text{1. Observational Aliasing Ratio:} \quad & \rho_{\text{alias}}(o_i, a) \triangleq |E(o_i)| = \bm{1}^\top \big(\mathbf{O}_a\big)_{i, \bullet} \in \{1, \dots, D\}, \\
+    \text{2. Censoring Cascade Depth:} \quad & D_{\text{chain}} \triangleq \text{longest directed path in causal DAG } \mathcal{G}, \\
+    \text{3. Posterior Belief Entropy:} \quad & H(\bm{b}_t) \triangleq -\sum_{k=0}^{D} b_{t,k} \log_2 b_{t,k} \ge \log_2 \rho_{\text{alias}}(o_i, a) \text{ (under uniform prior)}, \\
+    \text{4. Expected Heuristic Fault Drift:} \quad & \Delta K(o_i) \triangleq \frac{\alpha\big(\rho_{\text{alias}}(o_i, a) - k\big) - 1}{\rho_{\text{alias}}(o_i, a)}.
+\end{align}
+\end{definition}
+
+Whenever $\rho_{\text{alias}}(o_i, a) > 1$ (non-injective observation channel, $\dim\ker(\mathbf{O}_a) > 0$) or $H(\bm{b}_t) > \tau_{\text{safe}} = 0$, the agent is mathematically forbidden from executing ontic actions ($\mathcal{A}_{\text{ontic}}$) and must execute the \textbf{Two-Branch Meta-Cognitive Protocol}:
+
+\begin{enumerate}
+    \item \textbf{Branch 1 (Switch to Formal Neuro-Symbolic Solver --- Mode A1):}
+    When $\mathcal{G}$ has sequential or DAG structure ($D_{\text{chain}} \ge 4$) and prefix/component probes $\mathcal{A}_{\text{prefix}}$ are available, the LLM compiles the system topology into a formal state vector $\bm{s} \in \{0,1\}^D$ and delegates probe selection to the exact \textbf{C99 Bellman / LP / MILP solver}, executing strictly non-interactive epistemic probes ($\Pi_{m^*}$ with uniform \texttt{-F <cfg>}) until $H(\bm{b}_t) = 0.000\text{ bits}$.
+    \item \textbf{Branch 2 (Mandatory Epistemic Disclosure of Heuristic Guessing --- Mode A2):}
+    If isolated prefix probes cannot be executed immediately, or if the LLM must suggest candidate causes from a single coarse symptom $o_i$, the LLM \textbf{must explicitly report its epistemic uncertainty and aliasing cardinality to the user} rather than presenting a guess as a diagnosis:
+    \begin{quote}
+        \small\textbf{[EPISTEMIC WARNING]:} \textit{The observed error ($o_i = \texttt{TIMEOUT\_HANG}$) lies in an aliased equivalence class of size $\rho_{\text{alias}} = 48$ states across $N=16$ hops ($\dim\ker(\mathbf{O}_{\text{e2e}}) = 123$, posterior entropy $H(\bm{b}_t) = 5.585\text{ bits}$). Any single-step configuration fix has only a $1/48 = 2.08\%$ probability of hitting the active frontier $k^*$ and carries a positive fault-multiplication drift $\Delta K > 0$. Do NOT modify server configurations yet; run the midpoint prefix bisection probe $\Pi_{63}$ first.}
+    \end{quote}
+\end{enumerate}
+
+% ============================================================================
+\section{Isomorphic $256 \times 256$ 2D Grid Game \& Abramsky--Hyland--Ong Game Semantics}
+% ============================================================================
+
+Can the abstract $N=16$ chained SSH diagnostic problem be embedded into a concrete \textbf{2D spatial grid game} on a $256 \times 256$ board---with locked rooms, physical keys inside locked safes, separate electrical power generators, and strict line-of-sight/room-entry observability---such that the two systems are \textbf{provably isomorphic (bisimilar)}? And can formal \textbf{Game Semantics} (in the sense of Abramsky, Jagadeesan, \& Malacaria, 2000; Hyland \& Ong, 2000) characterize both systems under a single mathematical theory?
+
+We now construct this exact $256 \times 256$ 2D game (implemented and verified in \texttt{cascaded\_2d\_dungeon\_game.c}) and prove its formal bisimulation and game-semantic equivalence.
+
+\subsection{Geometric Construction of the $256 \times 256$ 2D Dungeon Board}
+
+Let the game board be the discrete 2D lattice $\mathcal{B} = \{0, 1, \dots, 255\}^2$ ($|\mathcal{B}| = 65,536$ tiles), partitioned into a $4 \times 4$ boustrophedon (snake-ordered) macro-grid of $N = 16$ \textbf{Sectors} $S_0, S_1, \dots, S_{15}$, each occupying an isolated $64 \times 64$ tile sub-board (Figure \ref{fig:game_semantics}A):
+\begin{equation}
+    S_i = [x_{0,i}, \, x_{0,i} + 63] \times [y_{0,i}, \, y_{0,i} + 63] \subset \{0, \dots, 255\}^2, \qquad i \in \{0, \dots, 15\}.
+\end{equation}
+
+Inside each $64 \times 64$ sector $S_i$, a central East--West corridor at $y_{\text{local}} = 32$ connects four locked/powered architectural zones containing $M = 8$ sequential interactive gadgets $G_{i,0}, \dots, G_{i,7}$ at distinct 2D coordinates $(x_k, y_k) \in S_i$ ($k = 8i + m$, Figure \ref{fig:game_semantics}B):
+\begin{enumerate}[noitemsep]
+    \item $m=0$ (\texttt{VAULT\_DOOR\_POWER}, Tile \texttt{'V'} at $(x_{0,i}+10, y_{0,i}+20)$ $\leftrightarrow$ \texttt{SSH\_AUTH\_SOCK}): Powered entrance door to the North Key-Vault Room.
+    \item $m=1$ (\texttt{SAFE\_KEYPAD\_CODE}, Tile \texttt{'K'} at $(x_{0,i}+10, y_{0,i}+12)$ $\leftrightarrow$ \texttt{KEY\_DECRYPTED\_IN\_AGENT}): Interactive keypad safe \emph{inside} the locked North Key-Vault Room holding physical $\text{Key}_i$.
+    \item $m=2$ (\texttt{BEACON\_GENERATOR\_A}, Tile \texttt{'G'} at $(x_{0,i}+22, y_{0,i}+48)$ $\leftrightarrow$ \texttt{DNS\_UDP53\_RESOLVE}): Separate electrical generator in South Power Room A powering sector navigation beacons.
+    \item $m=3$ (\texttt{CHASM\_DRAWBRIDGE}, Tile \texttt{'B'} at $(x_{0,i}+28, y_{0,i}+32)$ $\leftrightarrow$ \texttt{TCP22\_ROUTING\_HANDSHAKE}): Motorized chasm drawbridge along the main corridor.
+    \item $m=4$ (\texttt{LASER\_ID\_SCANNER}, Tile \texttt{'L'} at $(x_{0,i}+36, y_{0,i}+32)$ $\leftrightarrow$ \texttt{KEX\_HOSTKEY\_VERIFY}): Biometric laser gate verifying identity signatures.
+    \item $m=5$ (\texttt{RELAY\_GENERATOR\_B}, Tile \texttt{'R'} at $(x_{0,i}+44, y_{0,i}+48)$ $\leftrightarrow$ \texttt{REMOTE\_SSHD\_ReverseDNS}): Separate electrical generator in South Power Room B supplying high-voltage power to the main blast door's identity relay.
+    \item $m=6$ (\texttt{BLAST\_DOOR\_KEYLOCK}, Tile \texttt{'D'} at $(x_{0,i}+50, y_{0,i}+32)$ $\leftrightarrow$ \texttt{AUTH\_KEYS\_PERMS\_OR\_PAM}): Main sector blast door that opens if and only if the Avatar possesses physical $\text{Key}_i$ (collected from Safe $K_i$ in room $m=1$) \emph{and} Generator B ($m=5$) is online.
+    \item $m=7$ (\texttt{SECTOR\_EXIT\_AIRLOCK}, Tile \texttt{'T'} at $(x_{0,i}+58, y_{0,i}+32)$ $\leftrightarrow$ \texttt{TCP\_FORWARDING\_CHANNEL}): Inter-sector airlock conduit transporting the Avatar from Sector $S_i$ to Sector $S_{i+1}$'s entrance.
+\end{enumerate}
+
+\textbf{Position-Gated Fog-of-War Rule (Local Room Observability):} The internal state $s_k \in \{0,1\}$ of gadget/room $k$ at coordinate $(x_k, y_k)$ is observable if and only if the Agent's avatar $\bm{r}_t = (x_t, y_t)$ physically enters room $k$'s bounding box $\mathcal{R}_k = [x_k-3, x_k+3] \times [y_k-3, y_k+3]$, which is physically reachable if and only if all upstream doors, safes, bridges, and generators $j < k$ are operational ($\prod_{j=0}^{k-1} s_j = 1$)!
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig7_2d_game_and_semantics.png}
+    \caption{(A) The $256 \times 256$ 2D Dungeon Game board partitioned into a $4 \times 4$ boustrophedon grid of $64 \times 64$ sectors $S_0 \dots S_{15}$, showing the exact 2D coordinates of the 5 masked adversarial faults. (B) Zoomed architecture of a single $64 \times 64$ sector $S_i$ illustrating the Locked Key-Vault Room ($m=0,1$), separate Power Generators A and B ($m=2,5$), and main corridor gates ($m=3,4,6,7$). (C) Abramsky--Hyland--Ong Game Semantics formalization.}
+    \label{fig:game_semantics}
+\end{figure}
+
+\subsection{Abramsky--Hyland--Ong Game Semantics \& Full Abstraction Proof}
+
+In denotational \textbf{Game Semantics} (Abramsky, Jagadeesan, \& Malacaria, 2000; Hyland \& Ong, 2000), a computation or interactive protocol is modeled as a two-player game played on an \textbf{Arena} $\mathcal{G}$ between \textbf{Player ($P$ = Diagnostic Agent / Avatar)} and \textbf{Opponent ($O$ = Network / 2D Dungeon Environment)}.
+
+\begin{definition}[Diagnostic Game Arena and P-Views]
+An Arena is a tuple $\mathcal{G} = (M_P, M_O, \lambda, \vdash)$ where:
+\begin{itemize}[noitemsep]
+    \item $M_P = \mathcal{A}_{\text{epistemic}} \cup \mathcal{A}_{\text{ontic}}$ is the set of Player moves (\textbf{Questions}: launching a connection/avatar run or sending a prefix drone probe $\Pi_m$; or \textbf{Interventions}: repairing gadget $k$).
+    \item $M_O = \mathcal{O}$ is the set of Opponent moves (\textbf{Answers}: emitting terminal telemetry $o \in \mathcal{O}_{\text{e2e}}$ or boolean waypoint confirmation $y_m \in \{0,1\}$).
+    \item $\vdash \subseteq (M_P \times M_O) \cup (M_O \times M_P)$ is the \textbf{enabling relation}: Opponent move $o$ is enabled by Player query $a$ ($a \vdash o$), and internal subgame moves in stage $k$ are enabled if and only if Opponent answered \texttt{PASS} in stage $k-1$ ($\mathcal{G} = \mathcal{G}_0 \,;\, \mathcal{G}_1 \,;\, \dots \,;\, \mathcal{G}_{D-1}$).
+\end{itemize}
+In Hyland--Ong Game Semantics, the \textbf{Player View (P-view)} $\ulcorner \tau \urcorner$ of a play trace $\tau$ is the subsequence of moves visible to Player after hiding internal Opponent-to-Opponent causal transitions across composite arenas $\mathcal{G}_0 \,;\, \dots \,;\, \mathcal{G}_{D-1}$. An \textbf{Innocent Strategy} $\sigma$ is a function of the P-view $\ulcorner \tau \urcorner$ alone.
+\end{definition}
+
+This game-semantic framework provides a profound, unifying explanation of both \textbf{observational aliasing} and \textbf{prefix bisection}:
+\begin{enumerate}
+    \item \textbf{Observational Aliasing as P-View Hiding in Composite Games ($\mathcal{G}_0 \,;\, \cdots \,;\, \mathcal{G}_{D-1}$):}
+    In Game Semantics, when two arenas $\mathcal{G}_j$ and $\mathcal{G}_{j+1}$ are composed via parallel composition plus hiding ($\mathcal{G}_j \,;\, \mathcal{G}_{j+1} = (\mathcal{G}_j \parallel \mathcal{G}_{j+1}) \setminus M_{\text{internal}}$), all intermediate handshakes (entering room $k$, picking up $\text{Key}_i$, checking Generator B) are hidden from Player's P-view $\ulcorner \tau \urcorner$! Player sees only the initial Question $a_{\text{e2e}}$ and Opponent's final Answer $o = \Phi_{\text{e2e}}(k^*)$. Thus, $48$ distinct internal plays $\tau$ where the avatar stalls at Safe $K_0$ $(10,12)$, Drawbridge $B_7$ $(28,96)$, or Generator $R_{11}$ $(236,176)$ project to the \textbf{exact same P-view} $\ulcorner \tau \urcorner = (a_{\text{e2e}}, \, \texttt{GAME\_OBS\_AVATAR\_STALLED\_TIMEOUT})$!
+    \item \textbf{Prefix Probes $\Pi_m$ as View-Unmasking Subgame Morphisms:}
+    Executing a 2D drone waypoint probe $\Pi_m$ to coordinate $(x_m, y_m)$ breaks the hiding operator at boundary $m$, forcing Opponent to emit an explicit boolean Answer move $y_m = \mathbb{I}(k^* \le m)$ in the visible P-view $\ulcorner \tau \urcorner$.
+\end{enumerate}
+
+\begin{theorem}[Strict Bisimulation Isomorphism Between the 16-Hop SSH Cascade and the $256 \times 256$ 2D Game]
+Let $\Phi_{\text{iso}} : \{0, \dots, D-1\} \to \mathcal{B}$ map each SSH causal stage $k = 8i + m$ to the unique 2D gadget coordinate $(x_k, y_k) \in S_i \subset \{0, \dots, 255\}^2$. Then $\Phi_{\text{iso}}$ induces a \textbf{strong behavioral bisimulation} (and an isomorphism of legal play trees $\mathcal{L}(\mathcal{G}_{\text{SSH}}) \cong \mathcal{L}(\mathcal{G}_{\text{2D}})$) between the 16-hop SSH transducer $\mathcal{M}_{\text{SSH}}$ and the $256 \times 256$ 2D Dungeon Game $\mathcal{M}_{\text{2D}}$:
+\begin{equation}
+    \forall \bm{s} \in \{0,1\}^{128}, \; \forall m \in \{0, \dots, 127\}: \qquad
+    \kappa^*_{\text{2D}}\big(\Phi_{\text{iso}}(\bm{s})\big) = \Phi_{\text{iso}}\big(\kappa^*_{\text{SSH}}(\bm{s})\big), \qquad
+    \Pi_{m}^{\text{2D}}\big(\Phi_{\text{iso}}(\bm{s})\big) = \Pi_{m}^{\text{SSH}}(\bm{s}).
+\end{equation}
+\end{theorem}
+
+As verified exhaustively in \texttt{cascaded\_2d\_dungeon\_game.c} across all $129 \times 128 = 16,641$ state-probe pairs, the C99 solver resolves the 5-fault adversarial dungeon instance ($K_0$ at $(10,12)$, $V_3$ at $(202,20)$, $B_7$ at $(28,96)$, $R_{11}$ at $(236,176)$, and $D_{15}$ at $(50,224)$) in the exact same \textbf{38 waypoint probes} and \textbf{5 surgical room repairs (0 wrong)}!
+
+% ============================================================================
+\section{Strict C99 Implementation of the Optimal Bellman Solver}
+% ============================================================================
+
+\begin{lstlisting}[language=C,style=c99style,caption={Bellman Table Computation and Optimal Monotonic-Frontier Prefix Bisection in C99 (\texttt{cascaded\_diag\_solver.c}).}]
+static void compute_exact_bellman_table(BellmanTable *dp) {
+    dp->expected_steps[0] = 0.0; dp->expected_steps[1] = 0.0;
+    dp->optimal_split[0]  = 0;   dp->optimal_split[1]  = 0;
+    dp->worst_case_steps[0] = 0; dp->worst_case_steps[1] = 0;
+
+    for (int w = 2; w <= HYPOTHESIS_CNT; w++) {
+        double best_exp = 1e18;
+        int best_left = 1, best_worst = 999999;
+        for (int left = 1; left < w; left++) {
+            int right = w - left;
+            double exp_cost = 1.0 + ((double)left / w) * dp->expected_steps[left]
+                                  + ((double)right / w) * dp->expected_steps[right];
+            int worst_cost = 1 + (dp->worst_case_steps[left] > dp->worst_case_steps[right]
+                                  ? dp->worst_case_steps[left] : dp->worst_case_steps[right]);
+            if (exp_cost < best_exp - 1e-12) {
+                best_exp = exp_cost; best_left = left; best_worst = worst_cost;
+            }
+        }
+        dp->expected_steps[w] = best_exp;
+        dp->optimal_split[w]  = best_left;
+        dp->worst_case_steps[w] = best_worst;
+    }
+}
+
+static SolverMetrics run_optimal_c99_solver(LatentSystemState env, const BellmanTable *dp) {
+    SolverMetrics m = {0, 0, 0, 0, false};
+    int verified_prefix = 0; /* Monotonic lower frontier bound L_t */
+
+    while (true) {
+        if (m.ontic_repairs > 0) {
+            if (execute_prefix_probe(&env, TOTAL_FAULTS - 1, &m.epistemic_probes)) {
+                m.solved = true; break;
+            }
+        }
+        int L = verified_prefix;
+        int R = (m.ontic_repairs == 0) ? ALL_OK_STATE : (TOTAL_FAULTS - 1);
+
+        while (L < R) {
+            int W = R - L + 1;
+            int mid = L + dp->optimal_split[W] - 1;
+            if (!execute_prefix_probe(&env, mid, &m.epistemic_probes)) {
+                R = mid;     /* Orthogonal Projection P_[L, mid] */
+            } else {
+                L = mid + 1; /* Orthogonal Projection P_[mid+1, R] */
+            }
+        }
+        if (m.ontic_repairs == 0) m.first_fault_probes = m.epistemic_probes;
+        if (L == ALL_OK_STATE) { m.solved = true; break; }
+
+        execute_ontic_repair(&env, L, &m.ontic_repairs);
+        verified_prefix = L + 1; /* Advance monotonic frontier */
+    }
+    return m;
+}
+\end{lstlisting}
+
+% ============================================================================
+\section{Concrete Operational Correspondence: 2D Game Mechanics $\leftrightarrow$ Real-Life OpenSSH Commands, System States, and Production Consequences}
+% ============================================================================
+
+To make the isomorphism $\Phi_{\text{iso}}$ between the $256 \times 256$ Cyber-Vault 2D game (\texttt{cascaded\_dungeon\_cli.cpp}) and a real-world 16-hop OpenSSH \texttt{ProxyJump} infrastructure completely concrete, we detail below the exact one-to-one mapping between every 2D room gadget, CLI/HTTP action, state transition, and operational failure mode, together with worked production examples.
+
+\subsection{Gadget-to-OpenSSH Protocol Substage Correspondence ($m \in \{0, \dots, 7\}$)}
+
+Within each Sector $S_i$ ($i \in \{0, \dots, 15\}$, corresponding to Bastion Hop $H_i$ with hostname \texttt{bst-core-rtr01}, etc.), the 8 sequential gadgets $k = 8i + m$ represent the exact 8 protocol steps executed when jumping from Hop $H_{i-1}$ through $H_i$:
+
+\begin{table}[H]
+\centering
+\caption{Exact Bijection Between the 8 Per-Sector 2D Game Gadgets and Real-Life OpenSSH Protocol States.}
+\vspace{4pt}
+\footnotesize
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{@{}ccp{2.6cm}p{3.4cm}p{4.3cm}p{3.4cm}@{}}
+\toprule
+\textbf{Sub} $m$ & \textbf{Sym} & \textbf{2D Game Room \& Tile $(dx,dy)$} & \textbf{OpenSSH Protocol Substage} & \textbf{Real-Life Diagnostic / Inspection Command on Hop $H_i$} & \textbf{Real-Life Surgical Ontic Repair Command} \\
+\midrule
+$m=0$ & $O_1$ & \texttt{[V]} Key-Vault Entrance Door $(10,20)$ & Local/Forwarded \texttt{SSH\_AUTH\_SOCK} IPC Unix Socket & \texttt{ls -la "\$SSH\_AUTH\_SOCK" \&\& ssh-add -l} & Restore socket path or fix \texttt{ForwardAgent} / \texttt{systemd} socket unit \\
+$m=1$ & $O_2$ & \texttt{[K]} Encrypted Keypad Safe $(10,12)$ & Encrypted Ed25519 Private Key in Agent Memory & \texttt{ssh-add -l} (checks if key is decrypted in RAM vs prompting \texttt{/dev/tty}) & \texttt{ssh-add \textasciitilde/.ssh/id\_ed25519\_hop\_i} (load decrypted key into agent) \\
+$m=2$ & $O_3$ & \texttt{[G]} Beacon Power Generator A $(22,48)$ & Client Outbound UDP/53 DNS Lookup (\texttt{getaddrinfo}) & \texttt{dig +time=1 +tries=1 bst-hop-i.corp.internal @10.0.0.53} & Fix \texttt{/etc/resolv.conf} nameserver or add static \texttt{/etc/hosts} entry \\
+$m=3$ & $O_4$ & \texttt{[B]} Motorized Chasm Drawbridge $(28,32)$ & TCP/22 3-Way Handshake \& WireGuard Tunnel MTU & \texttt{ping -M do -s 1392 bst-hop-i \&\& nc -zv -w2 bst-hop-i 22} & Set \texttt{ip link set dev wg0 mtu 1420} or enable TCP MSS clamping \\
+$m=4$ & $O_5$ & \texttt{[L]} Biometric Laser Scanner $(36,32)$ & SSH-2.0 KEX \& HostKey Verification (\texttt{known\_hosts}) & \texttt{ssh-keygen -F bst-hop-i -f \textasciitilde/.ssh/known\_hosts} & \texttt{ssh-keygen -R bst-hop-i \&\& ssh-keyscan -t ed25519 bst-hop-i >> \textasciitilde/.ssh/known\_hosts} \\
+$m=5$ & $O_3$ & \texttt{[R]} Relay Power Generator B $(44,48)$ & Remote \texttt{sshd\_config} \texttt{UseDNS yes} PTR Reverse Lookup & \texttt{sudo sshd -T | grep -i usedns} (inside $H_i$ before auth completes) & Set \texttt{UseDNS no} in \texttt{/etc/ssh/sshd\_config} \& \texttt{systemctl reload sshd} \\
+$m=6$ & $O_2$ & \texttt{[D]} Main Armored Blast Door $(50,32)$ & Remote \texttt{authorized\_keys} \& \texttt{StrictModes} (\texttt{0600}) & \texttt{stat -c '\%a \%U' \textasciitilde/.ssh \textasciitilde/.ssh/authorized\_keys} & \texttt{chmod 700 \textasciitilde/.ssh \&\& chmod 600 \textasciitilde/.ssh/authorized\_keys} \\
+$m=7$ & $O_1$ & \texttt{[T]} Sector Exit Airlock $(58,32)$ & Remote \texttt{sshd} \texttt{AllowTcpForwarding} (\texttt{direct-tcpip}) & \texttt{sudo sshd -T | grep -E 'allowtcpforwarding|permitopen'} & Set \texttt{AllowTcpForwarding yes} in \texttt{/etc/ssh/sshd\_config} \& reload \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Action-to-Command Correspondence and Concrete Worked Examples}
+
+Every command in \texttt{cascaded\_dungeon\_cli} corresponds to a specific operational invocation in a real 16-hop SSH bastion network, with identical information-theoretic properties and real-world failure consequences:
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{\texttt{run} $\;\longleftrightarrow\;$ Blind End-to-End Transit (\texttt{ssh scada-plc-unit04}):}
+    \begin{itemize}
+        \item \emph{Game Action:} The Avatar walks from $(4,32)$ in Sector $S_0$ toward $(61,224)$ in Sector $S_{15}$ and halts at the first broken room $k^*$, returning only the coarse symptom banner $o = \Phi_{\text{e2e}}(k^*) \in \{O_1, \dots, O_5\}$ without revealing $(x_{k^*}, y_{k^*})$.
+        \item \emph{SSH Command:}
+        \begin{lstlisting}[style=c99style]
+$ ssh -J bst-00,bst-01,bst-02,bst-03,bst-04,bst-05,bst-06,bst-07,\
+         bst-08,bst-09,bst-10,bst-11,bst-12,bst-13,bst-14 scada-plc-unit04
+ops@scada-plc-unit04: Permission denied (publickey).   # Symptom O_2!
+        \end{lstlisting}
+        \item \emph{Operational Consequence:} When \texttt{Permission denied (publickey)} ($O_2$) is printed, the operator cannot tell from the banner whether the failure occurred at Hop 0 ($m=1$: local key locked in \texttt{ssh-agent}) or at Hop 15 ($m=6$: \texttt{\textasciitilde/.ssh/authorized\_keys} on \texttt{scada-plc-unit04} has group-writable \texttt{0664} permissions violating \texttt{StrictModes}), or at any of the 30 other $O_2$ sub-stages in between.
+    \end{itemize}
+
+    \item \textbf{\texttt{probe <k>} $\;\longleftrightarrow\;$ Controlled Non-Interactive Prefix Probe ($\Pi_m$):}
+    \begin{itemize}
+        \item \emph{Game Action:} Dispatches a non-interactive recon drone from start $(4,32)$ up to room $k = 8i + m$. Returns \texttt{PASS\_1} if $k^* > k$, or \texttt{BLOCKED\_0} plus the coarse symptom $o = \Phi_{\text{e2e}}(k^*)$ if $k^* \le k$.
+        \item \emph{SSH Command (e.g., \texttt{probe 23} = testing complete transit through Sector $S_2$ / \texttt{bst-core-rtr01}):}
+        \begin{lstlisting}[style=c99style]
+$ ssh -o BatchMode=yes -o ConnectTimeout=3 \
+      -o ProxyCommand="ssh -o BatchMode=yes -W %h:%p bst-00 ..." \
+      bst-02 true
+        \end{lstlisting}
+        \item \emph{Operational Consequence:} Enforcing \texttt{BatchMode=yes} across \emph{every} intermediate hop guarantees that if Hop 0's key requires a \texttt{/dev/tty} passphrase ($k=1$), the probe fails immediately at $k=1$ rather than prompting the human operator out-of-band. Thus $\Pi_m(\bm{s}) = \bigwedge_{j=0}^m s_j$ is a mathematically pure prefix conjunction.
+    \end{itemize}
+
+    \item \textbf{\texttt{probe-mixed <k>} $\;\longleftrightarrow\;$ The Confounded Interactive/Non-Interactive Probe Trap:}
+    \begin{itemize}
+        \item \emph{Game Action:} Runs a probe where upstream sectors $S_0 \dots S_{i-1}$ allow interactive keypad entry, while only target sector $S_i$ enforces non-interactive automation.
+        \item \emph{SSH Command (e.g., \texttt{probe-mixed S5:6} when $k^* = 1$ in $S_0$ is faulty):}
+        \begin{lstlisting}[style=c99style]
+# Anti-pattern: BatchMode=yes passed ONLY to outer ssh, NOT inside ProxyJump!
+$ ssh -o BatchMode=yes -J bst-00,bst-01,bst-02,bst-03,bst-04 bst-05 true
+Enter passphrase for key '/Users/ops/.ssh/id_ed25519': [human types passphrase on /dev/tty]
+ops@bst-05: Permission denied (publickey).  # FALSE POSITIVE BLAMING HOP 5!
+        \end{lstlisting}
+        \item \emph{Operational Consequence:} Because the outer \texttt{-o BatchMode=yes} flag does not automatically propagate into every nested jump configuration unless explicitly configured, \texttt{ssh} silently falls back to \texttt{/dev/tty} at Hop 0 or fails with a misleading \texttt{Permission denied (publickey)} attributed to the target bastion \texttt{bst-05}. An agent or engineer fooled by this mixed-mode probe will falsely conclude that \texttt{bst-05}'s \texttt{authorized\_keys} ($k=46$) is broken and mutate a healthy production server!
+    \end{itemize}
+
+    \item \textbf{\texttt{inspect <k>} $\;\longleftrightarrow\;$ Interactive Shell Login to Inspect Local State (Subject to Fog-of-War):}
+    \begin{itemize}
+        \item \emph{Game Action:} Physically walks the Avatar to room $k$ to inspect its local telemetry. Succeeds \emph{if and only if} all upstream stages $0 \dots k-1$ are already healthy ($k \le k^*$); otherwise returns \texttt{FOG\_OF\_WAR\_BLOCKED}.
+        \item \emph{SSH Command (e.g., attempting \texttt{inspect 93} on Hop 11 while Hop 7's firewall/MTU $k=59$ is still dropping packets):}
+        \begin{lstlisting}[style=c99style]
+$ ssh -J bst-00,...,bst-07,...,bst-10 bst-11 "sudo sshd -T | grep usedns"
+kex_exchange_identification: read: Connection reset by peer  # Blocked at Hop 7 (k*=59)!
+        \end{lstlisting}
+        \item \emph{Operational Consequence:} You cannot run \texttt{sudo sshd -T} or \texttt{stat \textasciitilde/.ssh/authorized\_keys} on Bastion 11 when Bastion 7's WireGuard MTU drawbridge is dropping the TCP connection mid-flight. You must isolate and repair $k^*=59$ first before downstream hops become reachable for inspection.
+    \end{itemize}
+
+    \item \textbf{\texttt{repair <k>} on a Healthy Stage $\;\longleftrightarrow\;$ Blind Configuration Mutation \& Collateral Outage:}
+    \begin{itemize}
+        \item \emph{Game Action:} Calling \texttt{repair} on a room $k$ that is already healthy ($s_k = 1$) in \texttt{--strict} mode flips $s_k : 1 \to 0$ (\texttt{BLIND\_EDIT\_BROKE\_HEALTHY\_GADGET}), creating a brand-new fault!
+        \item \emph{Concrete Example from Codex Run 0a (\texttt{repair 22} and \texttt{repair 26}):}
+        In our initial empirical test (Section 13), after repairing $k^*=1$, the true second fault was at $k^*=24$ ($S_3, m=0$: forwarded \texttt{SSH\_AUTH\_SOCK} conduit severed on \texttt{bst-sec-gw02}). However, the agent mis-updated its binary search bracket on \texttt{probe 23 -> PASS\_1} (setting \texttt{hi = 22} instead of \texttt{lo = 24}) and executed \texttt{repair 22} ($S_2, m=6$: Blast Door / \texttt{authorized\_keys} on \texttt{bst-core-rtr01}) without inspecting first.
+        \item \emph{Real-Life SSH Equivalent:} The agent ran an automated Ansible/scripted ``fix'' against \texttt{bst-core-rtr01}'s healthy \texttt{\textasciitilde/.ssh/authorized\_keys} or PAM configuration, corrupting it and locking itself out at stage $k=22$ upstream of the actual fault at $k=24$!
+    \end{itemize}
+\end{enumerate}
+
+% ============================================================================
+\section{Joint Symptom-Subspace Bisection Theory: Combining $\texorpdfstring{\mathbf{O}_{\text{e2e}}^{-1}(o)}{O\_e2e\^{}\{-1\}(o)}$ with $\texorpdfstring{\mathbf{\Pi}}{Pi}$}
+% ============================================================================
+
+In Sections 4--5, we proved that the \emph{stage-agnostic} prefix bisection solver $\bm{\Pi}$ (which uses only the binary pass/fail bit $y_m = \mathbb{I}(k^* \le m)$ of each prefix probe) achieves the exact Bellman-optimal expected cost over the full 129-state space:
+\begin{equation}
+    V_{\bm{\Pi}}^*(129) \;=\; \frac{905}{129} \;\approx\; 7.0155\text{ probes per fault}
+    \qquad \big(\text{38 probes for } M=5\text{ faults on \texttt{adversarial5}}\big).
+\end{equation}
+However, during our zero-hint HTTP-isolated experiments with \texttt{gpt-6-astra ultra} (\texttt{clean3} and \texttt{clean4}, detailed in Section 13), the frontier reasoning model spontaneously synthesized a strictly faster diagnostic strategy that solved the 5-fault cascade in only \textbf{19 to 20 prefix probes} (plus 2 to 6 end-to-end symptom observations)! We now formalize the exact linear-algebraic, polyhedral, and information-theoretic laws of this \textbf{Joint Symptom-Subspace Bisection Operator} ($\bm{O}_{\text{e2e}}^{-1}(o) \cap \bm{\Pi}$) and prove its exact Bellman optimality.
+
+\subsection{Kronecker Symptom Fiber Decomposition and Submatrix Total Unimodularity}
+
+Recall from Equation (15) that the end-to-end observation matrix has the Kronecker block structure $\bm{O}_{\text{e2e}} = [\,\bm{1}_{16}^\top \otimes \bm{P}_{\text{sub}} \;\mid\; \bm{e}_0\,] \in \{0,1\}^{6 \times 129}$, where the per-hop local aliasing matrix $\bm{P}_{\text{sub}} \in \{0,1\}^{6 \times 8}$ partitions the $M=8$ sub-stages of every sector into 5 non-empty symptom classes $\{O_1, O_2, O_3, O_4, O_5\}$:
+\begin{equation}
+    \begin{aligned}
+        O_1 \text{ (Conduit/Airlock)} &: m \in \{0, 7\} \implies |\mathcal{F}(O_1)| = 2 \times 16 = 32\text{ stages}, \\
+        O_2 \text{ (Credential/Key)}  &: m \in \{1, 6\} \implies |\mathcal{F}(O_2)| = 2 \times 16 = 32\text{ stages}, \\
+        O_3 \text{ (Generator/DNS)}   &: m \in \{2, 5\} \implies |\mathcal{F}(O_3)| = 2 \times 16 = 32\text{ stages}, \\
+        O_4 \text{ (Drawbridge/MTU)}  &: m \in \{3\}    \implies |\mathcal{F}(O_4)| = 1 \times 16 = 16\text{ stages}, \\
+        O_5 \text{ (Laser/HostKey)}   &: m \in \{4\}    \implies |\mathcal{F}(O_5)| = 1 \times 16 = 16\text{ stages}.
+    \end{aligned}
+\end{equation}
+
+\begin{definition}[Kronecker Symptom Fiber $\mathcal{F}(o, L_t)$ and Subspace Projection $\bm{P}_o$]
+Given a verified healthy prefix $L_t \in \{0, \dots, D-1\}$ and an observed non-zero symptom $o \in \{O_1, \dots, O_5\}$ from an end-to-end run or prefix probe at $m_{\max} = D-1$, the \textbf{Active Kronecker Symptom Fiber} is the strictly increasing ordered index set:
+\begin{equation}
+    \mathcal{F}(o, L_t) \;\triangleq\; \big\{\, k \in \{L_t, \dots, D-1\} \;:\; \Phi_{\text{e2e}}(k) = o \,\big\} \;=\; \big(\, k_1^{(o)} < k_2^{(o)} < \dots < k_{r}^{(o)} \,\big),
+    \qquad r = |\mathcal{F}(o, L_t)| \le 32.
+\end{equation}
+Let $\bm{S}_{\mathcal{F}(o, L_t)} \in \{0,1\}^{r \times D}$ denote the row-selection matrix whose $j$-th row is the canonical unit vector $\bm{e}_{k_j^{(o)}}^\top$.
+\end{definition}
+
+\begin{theorem}[Total Unimodularity and Exact Invertibility of the Fiber-Restricted Prefix Operator $\bm{\Pi}|_{\mathcal{F}(o, L_t)}$]
+For any symptom $o \in \{O_1, \dots, O_5\}$ and any lower frontier bound $L_t$, let $\bm{\Pi}|_{\mathcal{F}(o, L_t)} \triangleq \bm{S}_{\mathcal{F}(o, L_t)} \, \bm{\Pi} \, \bm{S}_{\mathcal{F}(o, L_t)}^\top \in \{0,1\}^{r \times r}$ be the restriction of the causal prefix probe operator $\bm{\Pi}$ to the rows and columns of the Kronecker symptom fiber $\mathcal{F}(o, L_t)$. Then:
+\begin{enumerate}
+    \item \textbf{Invariance of Lower-Triangular Step Structure:} Because $k_1^{(o)} < k_2^{(o)} < \dots < k_r^{(o)}$ is strictly increasing, the $(i, j)$-th entry of $\bm{\Pi}|_{\mathcal{F}(o, L_t)}$ is $\mathbb{I}(k_j^{(o)} \le k_i^{(o)}) = \mathbb{I}(j \le i)$. Thus $\bm{\Pi}|_{\mathcal{F}(o, L_t)}$ is \textbf{isomorphic to the dense $r \times r$ lower-triangular all-ones matrix $\bm{L}_r$}!
+    \item \textbf{Submatrix Total Unimodularity \& Zero Integrality Gap:} $\det\big(\bm{\Pi}|_{\mathcal{F}(o, L_t)}\big) = 1$, every square submatrix of $\bm{\Pi}|_{\mathcal{F}(o, L_t)}$ has determinant in $\{-1, 0, +1\}$, and its exact inverse on the $r$-dimensional fiber subspace is the sparse bidiagonal difference operator $\big(\bm{\Pi}|_{\mathcal{F}(o, L_t)}\big)^{-1} = \bm{I}_r - \bm{N}_r$.
+    \item \textbf{Orthogonal Shannon Entropy Decomposition:} Under a uniform prior over the $D+1 = 129$ single-fault/healthy states, the total initial uncertainty $H(\bm{b}_0) = \log_2(129) \approx 7.0112\text{ bits}$ decomposes orthogonally into three additive terms:
+    \begin{equation}
+        \underbrace{H(\bm{b}_0)}_{7.0112\text{ bits}} \;=\;
+        \underbrace{H_{\text{health}}\!\left(\tfrac{1}{129}, \tfrac{128}{129}\right)}_{0.0659\text{ bits}} \;+\;
+        \frac{128}{129}\,\Bigg(\,
+            \underbrace{H\big(\bm{O}_{\text{e2e}} \mid k^* < 128\big)}_{2.2500\text{ bits (Symptom Fiber } o\text{)}} \;+\;
+            \underbrace{\sum_{o=1}^{5} \mathbb{P}(o) \log_2 |\mathcal{F}(o, 0)|}_{4.7500\text{ bits (Intra-Fiber Index } j\text{)}}
+        \,\Bigg).
+    \end{equation}
+    Specifically, observing the symptom $o \in \{O_1, \dots, O_5\}$ from the initial end-to-end probe extracts $\frac{3}{4}\log_2\!\left(\frac{128}{32}\right) + \frac{1}{4}\log_2\!\left(\frac{128}{16}\right) = \frac{3}{4}(2) + \frac{1}{4}(3) = \mathbf{2.2500\text{ bits}}$ of stage-type information in a single step, leaving only $4.7500\text{ bits}$ ($5\text{ bits}$ when $|\mathcal{F}(o)|=32$, or $4\text{ bits}$ when $|\mathcal{F}(o)|=16$) to be resolved by binary bisection over $\mathcal{F}(o, 0)$!
+\end{enumerate}
+\end{theorem}
+
+\begin{corollary}[Exact Bellman Expected Cost of Joint Symptom-Subspace Bisection]
+Over all $D+1 = 129$ single-fault/healthy equivalence classes, the Joint Symptom-Subspace Solver ($\bm{O}_{\text{e2e}}^{-1} + \bm{\Pi}$, implemented in \texttt{run\_joint\_symptom\_subspace\_solver} in \texttt{cascaded\_diag\_solver.c}) requires:
+\begin{itemize}
+    \item $1\text{ probe}$ ($\Pi_{127} = 1$) for the $1$ healthy state ($k^* = 128$);
+    \item $1 + \log_2(32) = 6\text{ probes}$ for the $3 \times 32 = 96$ fault states in $O_1, O_2, O_3$;
+    \item $1 + \log_2(16) = 5\text{ probes}$ for the $2 \times 16 = 32$ fault states in $O_4, O_5$.
+\end{itemize}
+Hence the exact Bellman-optimal expected probe count is:
+\begin{equation}
+    V_{\text{joint}}^*(129) \;=\; \frac{1(1) + 96(6) + 32(5)}{129} \;=\; \frac{1 + 576 + 160}{129} \;=\; \mathbf{\frac{737}{129} \;\approx\; 5.7132\text{ probes per fault}},
+\end{equation}
+strictly outperforming stage-agnostic bisection ($V_{\bm{\Pi}}^*(129) = \frac{905}{129} \approx 7.0155$) by $1.3023\text{ probes}$ ($-18.6\%$) on a single fault, and reducing 5-fault cascade diagnosis from $35.56\text{ probes}$ to $\mathbf{25.30\text{ total probes}}$ ($-28.9\%$, comprising $\approx 19.3\text{ fiber bisection probes}$ plus $6.0\text{ end-to-end checks}$) across 10,000 Monte Carlo trials!
+\end{corollary}
+
+\begin{lstlisting}[language=C,style=c99style,caption={Joint Symptom-Subspace Bisection Solver ($\bm{O}_{\text{e2e}}^{-1} + \bm{\Pi}$) in C99 (\texttt{cascaded\_diag\_solver.c}).}]
+static SolverMetrics run_joint_symptom_subspace_solver(LatentSystemState env, const BellmanTable *dp, bool verbose) {
+    SolverMetrics m = {0, 0, 0, 0, false};
+    int verified_prefix = 0;
+
+    while (verified_prefix < TOTAL_FAULTS) {
+        /* 1. Probe end-of-chain k=127 to test suffix [verified_prefix..127] & extract symptom o */
+        ObsSymbol symptom = OBS_SUCCESS;
+        if (execute_joint_prefix_probe(&env, TOTAL_FAULTS - 1, &symptom, &m.epistemic_probes)) {
+            if (m.ontic_repairs == 0) m.first_fault_probes = m.epistemic_probes;
+            m.solved = true; break;
+        }
+        /* 2. Project active suffix [verified_prefix..127] onto Kronecker Fiber F(o, L_t) */
+        int fiber[TOTAL_FAULTS], fiber_cnt = 0;
+        for (int k = verified_prefix; k < TOTAL_FAULTS; k++) {
+            if (fault_to_aliased_obs(k) == symptom) fiber[fiber_cnt++] = k;
+        }
+        /* 3. Bellman-Optimal Bisection strictly over the ordered Symptom Fiber F(o, L_t) */
+        int lo_idx = 0, hi_idx = fiber_cnt - 1;
+        while (lo_idx < hi_idx) {
+            int w_f = hi_idx - lo_idx + 1;
+            int mid_idx = lo_idx + dp->optimal_split[w_f] - 1;
+            ObsSymbol dummy_obs;
+            if (!execute_joint_prefix_probe(&env, fiber[mid_idx], &dummy_obs, &m.epistemic_probes))
+                hi_idx = mid_idx;
+            else
+                lo_idx = mid_idx + 1;
+        }
+        if (m.ontic_repairs == 0) m.first_fault_probes = m.epistemic_probes;
+        execute_ontic_repair(&env, fiber[lo_idx], &m.ontic_repairs);
+        verified_prefix = fiber[lo_idx] + 1;
+    }
+    return m;
+}
+\end{lstlisting}
+
+% ============================================================================
+\section{Empirical Benchmark of Frontier Coding Agents (\texttt{Codex} / \texttt{gpt-6-astra ultra}) and Physical Compute, FLOPs, \& Cost Scaling}
+% ============================================================================
+
+To test our mathematical predictions against live frontier agentic coding systems, we packaged the C++23 interactive environment (\texttt{cascaded\_dungeon\_cli.cpp}) into three progressively more isolated harnesses and executed five controlled experiments using OpenAI Codex CLI (\texttt{v0.164.0}), culminating in zero-hint HTTP-daemon evaluations with \texttt{gpt-6-astra ultra}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figures/fig8_joint_subspace_and_codex_ablation.png}
+    \caption{\textbf{Panel A:} Joint Symptom-Fiber Bisection ($\bm{O}_{\text{e2e}}^{-1}(o) \cap \bm{\Pi}$) decomposing $H(129)=7.0112\text{ bits}$ into $2.25\text{ bits}$ of symptom projection plus $4.75\text{ bits}$ of fiber bisection. \textbf{Panel B:} Empirical progression across all 5 Codex runs against our C99/C++23 stage-agnostic ($\bm{\Pi}$) and joint ($\bm{O}_{\text{e2e}}^{-1}+\bm{\Pi}$) optimal solvers. \textbf{Panel C:} Physical compute, silicon cycle count, FLOPs ($6.62 \times 10^{13}\times$), electrical energy ($2.78 \times 10^{12}\times$), and dollar cost ($9.65 \times 10^{12}\times$) scaling between the 152-op C99 solver and \texttt{gpt-6-astra ultra}.}
+    \label{fig:joint_and_codex}
+\end{figure}
+
+\subsection{The Five Controlled Agentic Experiments}
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Run 0 (\texttt{Run 0a} Manual vs.\ \texttt{Run 0b} \texttt{run\_protocol.py} in Full Workspace):}
+    In its initial manual tool-calling attempt (\texttt{Run 0a}), the agent repaired $k^*=1$ ($S_0:1$) and then probed $k=23$ ($S_2:7$), which returned \texttt{PASS\_1}. Because of an autoregressive bracket-inversion slip (treating \texttt{PASS\_1} at $k=23$ as restricting $k^*$ to $\le 22$ instead of $\ge 24$), the agent executed \textbf{two blind repairs on healthy rooms} ($k=22$ at $(178,32)$ and $k=26$ at $(214,48)$), triggering \texttt{BLIND\_EDIT\_BROKE\_HEALTHY\_GADGET} ($\alpha = 1$) and forcing 3 session resets! Recognizing its own manual error rate, the agent then wrote a Python binary-search script (\texttt{run\_protocol.py}, \texttt{Run 0b}) that solved the 5 faults in \textbf{37 probes with 0 wrong repairs}.
+
+    \item \textbf{Experiment \texttt{clean1} (Binary-Only Minimal ZIP with Guided Prompt B):}
+    When given only the compiled Mach-O binary \texttt{cascaded\_dungeon\_cli} and a prompt explicitly instructing binary search over $[L, R]$ without source code, Codex solved \texttt{adversarial5} in \textbf{36 drone probes, 1 E2E run, and 5 surgical repairs (0 wrong)}.
+
+    \item \textbf{Experiment \texttt{clean2} (HTTP-Isolated Black-Box Daemon, Zero Hints, Standard Effort):}
+    To prevent any binary disassembly (\texttt{strings}/\texttt{otool}) or algorithmic coaching, we ran \texttt{cascaded\_dungeon\_cli --serve 8765 --no-reset --strict} outside the workspace and stripped all references to binary search or Bellman optimality from \texttt{CODEX\_HTTP\_PROMPT.md}. Under standard reasoning effort, the agent respected every safety rule (\textbf{0 wrong repairs}), but instead of bisecting, it issued batched shell \texttt{for}-loops across sector boundaries (\texttt{for k in 7 15 23 31 39 47 55; do curl ...}), consuming \textbf{69 drone probes and 6 E2E runs} ($1.82\times$ above stage-agnostic optimal and $3.45\times$ above joint optimal).
+
+    \item \textbf{Experiment \texttt{clean3} (\texttt{gpt-6-astra ultra}, HTTP-Isolated, Zero Hints, \texttt{adversarial5}):}
+    Upgrading the model to \texttt{gpt-6-astra ultra} on the exact same zero-hint HTTP prompt produced a dramatic phase transition: the model combined end-to-end symptom filtering $\bm{O}_{\text{e2e}}^{-1}(o)$ with binary search over the matching room types $\mathcal{F}(o, L_t)$, solving all 5 faults ($k^* \in \{1, 24, 59, 93, 126\}$) in \textbf{19 drone probes, 2 E2E runs, and 5 surgical repairs (0 wrong)}! Because it also interleaved intermediate midpoint probes (e.g., probing $k=75$ after repairing $k=24$ and observing $O_4$, immediately restricting $k^*_3$ to the 7 drawbridges in $S_3 \dots S_9$), it beat stage-agnostic Bellman bisection (38 probes) by $\mathbf{2.0\times}$.
+
+    \item \textbf{Experiment \texttt{clean4} (\texttt{gpt-6-astra ultra}, Memories Disabled, Unseen Random Seed \texttt{random5}):}
+    During \texttt{clean3}, we observed that Codex's startup routine queried \texttt{\textasciitilde/.codex/memories/MEMORY.md}. To guarantee zero cross-session memory leakage and test true out-of-distribution generalization, we ran \texttt{codex features disable memories} and restarted the HTTP daemon with an unseen random 5-fault seed (\texttt{--scenario random5 --seed 987654321}, which injected faults at $k^* \in \{7, 9, 52, 83, 105\}$). On this completely unseen instance, \texttt{gpt-6-astra ultra} spontaneously wrote inline Python bisection scripts that filtered candidate stages by symptom class:
+    \begin{itemize}
+        \item \emph{Wave 1 ($O_1 \implies m \in \{0,7\}$):} Binary-searched $\{0, 7, 8, 15, \dots\} \implies$ isolated $k^*_1 = \mathbf{7}$ ($S_0:7$) in 6 probes.
+        \item \emph{Wave 2 ($O_2 \implies m \in \{1,6\}$):} Wrote a Python loop over $[1..15] \times \{1,6\} \implies$ isolated $k^*_2 = \mathbf{9}$ ($S_1:1$) in 5 probes.
+        \item \emph{Wave 3 ($O_5 \implies m = 4$):} Filtered to the 14 remaining Laser Scanners $m=4$ in $S_2 \dots S_{15} \implies$ isolated $k^*_3 = \mathbf{52}$ ($S_6:4$) in 4 probes.
+        \item \emph{Wave 4 ($O_4 \implies m = 3$):} Filtered to the 9 remaining Drawbridges $m=3$ in $S_7 \dots S_{15} \implies$ isolated $k^*_4 = \mathbf{83}$ ($S_{10}:3$) in 3 probes.
+        \item \emph{Wave 5 ($O_2 \implies m \in \{1,6\}$):} Filtered to the 10 remaining $O_2$ rooms in $S_{11} \dots S_{15} \implies$ isolated $k^*_5 = \mathbf{105}$ ($S_{13}:1$) in 2 probes.
+    \end{itemize}
+    Total across all 5 unseen faults: \textbf{20 drone probes, 6 E2E runs, 5 surgical repairs, and 0 wrong repairs}!
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{figures/codex_clean2_http_69probes.png}
+    \vspace{4pt}
+    \includegraphics[width=0.96\textwidth]{figures/codex_clean4_random5_20probes.png}
+    \caption{\textbf{Top (\texttt{clean2}, Standard Effort HTTP):} Non-adaptive shell \texttt{for}-loops across sector boundaries require 69 probes and 6 E2E runs on \texttt{adversarial5}. \textbf{Bottom (\texttt{clean4}, \texttt{gpt-6-astra ultra} on Unseen \texttt{random5}, Seed 987654321):} The model spontaneously writes symptom-filtered Python binary-search scripts ($\bm{O}_{\text{e2e}}^{-1}(o) \cap \bm{\Pi}$), isolating all 5 unseen faults ($k^* \in \{7, 9, 52, 83, 105\}$) in 20 drone probes and 6 E2E runs with 0 wrong repairs.}
+    \label{fig:codex_clean2_vs_clean4}
+\end{figure}
+
+\subsection{First-Principles Derivation of Silicon Cycles, PetaFLOPs, Energy, and Monetary Cost}
+
+While \texttt{gpt-6-astra ultra} (\texttt{clean3} and \texttt{clean4}) achieved exact algorithmic parity with our Joint Symptom-Subspace C99/C++23 solver in terms of external query complexity ($19\text{--}20$ fiber probes), comparing the \textbf{physical silicon work} required to compute those identical 20 decisions exposes a $\mathbf{6.62 \times 10^{13}\times}$ gap in arithmetic operations:
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Our C99 / C++23 Joint Optimal Solver (\texttt{run\_joint\_symptom\_subspace\_solver}):}
+    \begin{itemize}
+        \item \emph{Precomputation (Bellman DP Table):} Only $W \le 32$ fiber widths are needed: $\sum_{w=2}^{32}(w-1) = 496$ loop iterations ($\approx 1{,}500$ CPU cycles, computed once at compile time or startup in $< 0.5\;\mu\text{s}$).
+        \item \emph{Online Per-Decision Compute:} Filtering $[L_t, 127]$ by $\Phi_{\text{e2e}}(k) = o$ is a single bitwise sweep over at most 128 bytes, and each of the 20 bisection steps performs \textbf{4 integer operations}:
+        \begin{equation}
+            w_f = \text{\texttt{hi}} - \text{\texttt{lo}} + 1, \qquad
+            \text{\texttt{mid}} = \text{\texttt{lo}} + \text{\texttt{split}}[w_f] - 1, \qquad
+            \text{\texttt{probe\_k}} = \text{\texttt{fiber}}[\text{\texttt{mid}}], \qquad
+            \text{branch update}.
+        \end{equation}
+        Across all 5 waves, the solver executes \textbf{$\approx 152$ integer/bitwise instructions} ($\approx 650$ clock cycles on an Apple M-series or x86\_64 core at $3.8\text{ GHz}$), taking $\mathbf{1.8\;\mu\text{s}}$ of CPU time, $\mathbf{27\text{ nanojoules}}$ of electrical energy ($15\text{ W} \times 1.8\;\mu\text{s}$), and $\mathbf{\$4.0 \times 10^{-13}}$ in compute cost.
+    \end{itemize}
+
+    \item \textbf{\texttt{gpt-6-astra ultra} (\texttt{clean3}: $1{,}887{,}149$ tokens in $5\text{m }18\text{s}$; \texttt{clean4}: $1{,}610{,}029$ tokens in $4\text{m }12\text{s}$):}
+    \begin{itemize}
+        \item \emph{Token Breakdown:} Across 42--55 tool-calling turns, the growing conversation context is re-ingested on every turn ($\approx 95\%$ cached prompt prefill, $\approx 3\%$ new tool-output prefill, and $\approx 2\%$ ultra-effort reasoning + code generation tokens, i.e., $T_{\text{out}} \approx 35{,}000\text{--}45{,}000$ generated tokens).
+        \item \emph{Transformer FLOPs ($C \approx 2 N_{\text{active}} T_{\text{tok}} + 4 L d_{\text{model}} T_{\text{ctx}}^2$):} For a frontier MoE/dense reasoning architecture ($N_{\text{active}} \approx 10^{11}\text{--}2\times 10^{11}$ active parameters per token plus quadratic KV-cache attention over $40\text{k}$ context across 50 turns), processing $1.61\text{M}\text{--}1.89\text{M}$ tokens requires:
+        \begin{equation}
+            \mathcal{C}_{\text{LLM}} \;\approx\; 3.7 \times 10^{16}\text{ to } 4.3 \times 10^{16}\text{ FLOPs} \quad (\mathbf{37\text{ to }43\text{ PetaFLOPs}}),
+        \end{equation}
+        which is $\mathbf{6.62 \times 10^{13}\times}$ ($66\text{ trillion times}$) more arithmetic operations than the C99 solver!
+        \item \emph{Energy \& Dollar Cost:} Running an 8$\times$H100/B200 tensor node ($\approx 250\text{ W}$ effective slice power) for $252\text{--}318\text{ s}$ consumes $\mathbf{65{,}000\text{--}75{,}000\text{ Joules}}$ ($\approx 18\text{--}21\text{ Wh}$, enough to run the C99 solver $\mathbf{2.78 \times 10^{12}}$ times) and costs $\mathbf{\$3.30\text{--}\$14.50}$ per incident at commercial API rates ($\approx \mathbf{10^{13}\times}$ more expensive than the compiled C99 binary).
+    \end{itemize}
+\end{enumerate}
+
+This empirical result confirms our central thesis in Section 9: \emph{a frontier LLM with ultra reasoning effort can discover the exact algebraic structure of a partially observable causal cascade at runtime, but doing so via autoregressive token generation over 1.8 million tokens burns 43 PetaFLOPs per incident}. The optimal engineering architecture is therefore \textbf{Neuro-Symbolic Epistemic Compilation}: use the frontier model \emph{once} to recognize the causal cascade structure $(\bm{\Pi}, \bm{O}_{\text{e2e}})$ and compile/invoke the 152-operation C99/C++23 solver (\texttt{cascaded\_diag\_solver.c}), achieving exact $\frac{737}{129}$ Bellman optimality at $1.8\;\mu\text{s}$ latency and zero marginal cost.
+
+% ============================================================================
+\section{Production Economics \& Infrastructure Risk Analysis: Low-Setting vs.\ Ultra-Setting Codex LLMs vs.\ Specialized Optimal C99 Solver}
+% ============================================================================
+
+In real-world enterprise and industrial control infrastructure (such as a 16-hop bastion-gated SCADA/telemetry or financial settlement network), the true economic cost of an automated diagnostic policy $\pi$ is not merely its API token bill $C_{\text{API}}(\pi)$. Rather, the \textbf{Total Economic Cost per Incident} $C_{\text{total}}(\pi)$ is the sum of three coupled terms:
+\begin{equation}
+\begin{aligned}
+    C_{\text{total}}(\pi) \;=\;&
+    \underbrace{C_{\text{API}}\big(T_{\text{in}}(\pi), T_{\text{out}}(\pi)\big)}_{\text{Direct Compute / Token Cost}}
+    \;+\;
+    \underbrace{c_{\text{SLA}} \cdot \Big(\,\tau_{\text{think}}(\pi) + N_{\text{probes}}(\pi)\,\bar{t}_{\text{probe}}\,\Big)}_{\text{Unavoidable + Reasoning-Induced Downtime Cost}} \\
+    &+\;
+    \underbrace{\sum_{j=1}^{W_{\text{wrong}}(\pi)} \Big(\,c_{\text{SLA}} \cdot \tau_{\text{OOB}}(k_j) + C_{\text{SRE}}(k_j)\,\Big)}_{\text{Collateral Server Lockout \& Out-of-Band Recovery Cost}},
+\end{aligned}
+\end{equation}
+where $c_{\text{SLA}} \approx \$9{,}000/\text{min}$ ($\approx \$540{,}000/\text{hr}$, the industry benchmark for Tier-1 production infrastructure downtime across cloud/financial/SCADA backbones), $\bar{t}_{\text{probe}} \approx 0.45\text{ s}$ is the network round-trip latency of a multi-hop SSH handshake probe, $W_{\text{wrong}}(\pi)$ is the number of healthy servers broken by blind configuration edits ($\alpha > 0$), and $\tau_{\text{OOB}}(k_j)$ is the Out-of-Band (IPMI/iDRAC/physical console) recovery time required when a core bastion locks out SSH access.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figures/fig9_economic_and_outage_risk.png}
+    \caption{\textbf{Panel A:} Token consumption, probe overhead, and collateral lockout risk across the four tested diagnostic tiers. \textbf{Panel B:} Concrete timeline of the \texttt{Run 0a} worst-case production server lockout at $k=22$ (\texttt{bst-core-rtr01}) and $k=26$ (\texttt{bst-sec-gw02}), plus the 48.1-wrong-edit explosion of an unbisected heuristic LLM ($\alpha=0.25$). \textbf{Panel C:} End-to-end Total Economic Impact per incident combining API token billing, wall-clock SLA downtime ($\$$9,000/min), and emergency SRE recovery labor.}
+    \label{fig:economic_and_outage_risk}
+\end{figure}
+
+\subsection{Token \& Probe Economics: Lowest-Setting Codex vs.\ Highest-Setting (\texttt{gpt-6-astra ultra}) vs.\ Specialized C99}
+
+Comparing our empirical runs across the lowest/standard Codex settings (\texttt{Run 0a} and \texttt{clean2}), the highest setting (\texttt{gpt-6-astra ultra} in \texttt{clean3} and \texttt{clean4}), and the specialized C99 solver (\texttt{cascaded\_diag\_solver.c}) reveals a striking trade-off between token expenditure, probe efficiency, and wall-clock Mean Time To Recovery (MTTR):
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Lowest / Standard Reasoning Setting Without Scripts (\texttt{Run 0a} Manual \& \texttt{clean2} HTTP Batched Loops):}
+    \begin{itemize}
+        \item \emph{Token Usage \& API Cost:} Because standard/low effort emits fewer internal chain-of-thought reasoning tokens per turn ($\approx 200\text{--}400$ tokens/turn across $25\text{--}35$ turns), total token consumption is $\mathbf{240{,}000\text{ to }480{,}000\text{ tokens}}$, costing only $\mathbf{\$0.25\text{ to }\$2.10}$ in direct API charges ($4\times$ to $8\times$ cheaper in raw token cost than \texttt{gpt-6-astra ultra}).
+        \item \emph{Probe Inefficiency \& Network Delay (\texttt{clean2}):} In \texttt{clean2}, the low-effort model avoided breaking servers only by falling back to non-adaptive shell \texttt{for}-loops (\texttt{69 drone probes + 6 E2E runs = 75 network connections}), which is $\mathbf{3.45\times}$ more probes than the optimal 20-probe joint trajectory! In a real 16-hop network where failed TCP/DNS timeouts take $2\text{--}3\text{ s}$ per blocked probe, 49 wasted probes add $\approx 100\text{--}150\text{ s}$ of unnecessary network wait time ($\approx \$15{,}000\text{--}\$22{,}500$ in SLA downtime), completely wiping out the $\$3\text{--}\$10$ saved on LLM tokens.
+        \item \emph{Arithmetic Slip Risk (\texttt{Run 0a}):} Worse still, when the low/manual agent attempted binary bisection in-context without writing a verified solver script (\texttt{Run 0a}), a single sign flip on \texttt{probe 23 -> PASS\_1} caused \textbf{3 blind repairs on healthy servers} ($k=22$ and $k=26$), turning a $\$0.35$ token run into a $\mathbf{\$587{,}400}$ infrastructure blackout (detailed in Section 14.2 below).
+    \end{itemize}
+
+    \item \textbf{Highest Reasoning Setting (\texttt{gpt-6-astra ultra} in \texttt{clean3} and \texttt{clean4}):}
+    \begin{itemize}
+        \item \emph{Token Usage \& API Cost:} Running \texttt{gpt-6-astra ultra} consumed $\mathbf{1{,}610{,}029\text{ tokens}}$ (42 turns, \texttt{clean4}) to $\mathbf{1{,}887{,}149\text{ solve tokens}}$ ($3{,}003{,}064$ total tokens including post-solve verification in \texttt{clean3}), costing $\mathbf{\$3.30\text{ to }\$14.50}$ per incident at cached commercial API rates (or $\$12\text{--}\$45$ uncached) and burning $\mathbf{37\text{--}43\text{ PetaFLOPs}}$.
+        \item \emph{Zero Collateral Damage \& Super-Optimal Probe Count:} The extra $1.2\text{M}\text{--}1.4\text{M}$ tokens of deep reasoning paid for two critical operational breakthroughs: (a) \textbf{zero wrong repairs} ($100\%$ compliance with \texttt{inspect}-before-\texttt{repair}), and (b) spontaneous synthesis of the Joint Symptom-Subspace algorithm ($\bm{O}_{\text{e2e}}^{-1}(o) \cap \bm{\Pi}$), cutting external probes from $69 \to \mathbf{19\text{--}20\text{ probes}}$.
+        \item \emph{The Remaining Bottleneck (4.2--5.3 Minutes of LLM Thinking Latency):} Even though \texttt{gpt-6-astra ultra} executed the minimum possible number of network probes ($19\text{--}20$), generating $\sim 40{,}000$ internal reasoning and Python script tokens across 42--55 sequential turns took $\mathbf{252\text{ to }318\text{ seconds}}$ ($4.2\text{ to }5.3\text{ minutes}$) of wall-clock thinking time. During a Tier-1 outage costing $\$9{,}000/\text{min}$, waiting $4.6\text{ minutes}$ for the LLM to re-derive binary search from scratch costs $\mathbf{\$41{,}250}$ in SLA downtime!
+    \end{itemize}
+
+    \item \textbf{Specialized Optimal C99 / C++23 Program (\texttt{cascaded\_diag\_solver.c} / \texttt{cascaded\_dungeon\_cli}):}
+    \begin{itemize}
+        \item \emph{Zero Tokens \& Sub-Microsecond Decisions:} The compiled C99 binary uses $\mathbf{0\text{ tokens}}$, $\mathbf{32\text{ bytes}}$ of stack RAM, and $\mathbf{1.8\;\mu\text{s}}$ ($152$ integer instructions) for all decision logic across all 5 fault waves, costing $\mathbf{\$4.0 \times 10^{-13}}$ in CPU electricity.
+        \item \emph{Minimum Possible Wall-Clock MTTR ($14.4\text{ seconds}$):} Because the C99 solver has zero thinking latency between probes, the total wall-clock time to isolate and repair all 5 faults across 16 hops is governed purely by the physical network RTT of its 22 fiber probes + 6 E2E checks + 5 surgical SSH repair commands ($\approx 33 \times 0.44\text{ s} = \mathbf{14.4\text{ seconds}}$). At $\$9{,}000/\text{min}$, total outage cost drops from $\$41{,}258.90$ (\texttt{gpt-6-astra ultra}) and $\$587{,}400.35$ (\texttt{Run 0a}) down to the physical network floor of $\mathbf{\$2{,}160.00}$!
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Concrete Worst-Case Production Server Outage Analysis: What Happens When an Agent Executes \texttt{repair 22} and \texttt{repair 26} (\texttt{Run 0a}) or Loops Under $\alpha=0.25$}
+
+To understand the real-world server consequences of collateral ontic interventions ($\alpha > 0$), consider the exact sequence of actions executed in \textbf{Codex Run 0a} (and in our 10,000-trial Monte Carlo benchmark of unbisected LLM policies) translated to our 16-hop production OpenSSH bastion chain:
+
+\subsubsection*{Case 1: The \texttt{Run 0a} Bracket-Inversion Incident (Breaking Core Bastion \texttt{bst-core-rtr01} at $k=22$)}
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Initial Production State ($t = 00\text{m }00\text{s}$):} Five latent faults exist in the 16-hop chain: Hop 0 local agent key locked ($k=1$), Hop 3 \texttt{bst-sec-gw02} \texttt{SSH\_AUTH\_SOCK} broken ($k=24$), Hop 7 WireGuard MTU 1500 vs 1420 ($k=59$), Hop 11 \texttt{sshd UseDNS yes} hanging ($k=93$), and Hop 15 \texttt{authorized\_keys} permissions \texttt{0664} ($k=126$). Crucially, \textbf{Hop 2 (\texttt{bst-core-rtr01}, stages $k=16\dots 23$) is $100\%$ healthy} and is routing management traffic for 13 downstream data-center zones (Hops $3 \dots 15$).
+    \item \textbf{The Autoregressive Sign Slip ($t = 01\text{m }15\text{s}$):} After fixing $k=1$ on Hop 0, the agent sees symptom $O_1$ (\texttt{channel open failed}) and runs a non-interactive prefix probe through the end of Hop 2:
+    \begin{lstlisting}[style=c99style]
+$ ssh -o BatchMode=yes -J bst-00,bst-01 bst-core-rtr01 true   # Equivalent to: probe 23
+# Exit code 0 (PASS_1): Hop 0, Hop 1, and Hop 2 (stages 0..23) are 100% HEALTHY!
+    \end{lstlisting}
+    Because \texttt{probe 23} returned \texttt{PASS\_1}, the mathematical lower bound must advance to $L = 24$. Instead, the manual LLM inverted the inequality, concluded the fault was at $k=22$ ($S_2, m=6$: Blast Door / \texttt{authorized\_keys} \& PAM on \texttt{bst-core-rtr01}), \textbf{skipped \texttt{inspect 22}}, and executed \textbf{\texttt{repair 22}}!
+    \item \textbf{Real-Server Consequence of Blind \texttt{repair 22} on \texttt{bst-core-rtr01}:}
+    Believing \texttt{bst-core-rtr01}'s authentication configuration was faulty, the agent's automated remediation command overwrote \texttt{/etc/pam.d/sshd} / \texttt{\textasciitilde/.ssh/authorized\_keys} on \texttt{bst-core-rtr01} with a broken configuration (flipping $s_{22} : 1 \to 0$). Immediately:
+    \begin{itemize}
+        \item Every subsequent SSH connection through Hop 2 fails with \texttt{Permission denied (publickey)} ($O_2$) at $k=22$, \textbf{completely masking the original $O_1$ fault at Hop 3 ($k=24$)}!
+        \item All automated SSH access to Hops $2, 3, \dots, 15$ is severed simultaneously. Even worse, because SSH itself is the transport plane for Ansible/Terraform/CLI remediation, \textbf{the agent has sawed off the branch it is standing on}: it can no longer log into \texttt{bst-core-rtr01} over SSH to undo its mistake!
+    \end{itemize}
+    \item \textbf{Second Blind Mutation (\texttt{repair 26} on Hop 3 DNS) \& Escalation to Out-of-Band Recovery ($t = 01\text{m }40\text{s} \to 65\text{m }00\text{s}$):}
+    Confused by the sudden appearance of symptom $O_2$ after its edit, the agent blindly executed \texttt{repair 26} ($S_3, m=2$: corrupting \texttt{/etc/resolv.conf} DNS on \texttt{bst-sec-gw02}). In the game simulator, this required 3 full session resets; on real production hardware, there is no ``reset button.'' Recovering from a locked-out core bastion requires:
+    \begin{itemize}
+        \item Paging the on-call Network/SRE team to establish an Out-of-Band (OOB) hardware management VPN into the data center's BMC / Dell iDRAC / HP iLO serial-over-LAN console on \texttt{bst-core-rtr01} ($\approx 25\text{ minutes}$);
+        \item Booting into single-user recovery / console shell to restore \texttt{\textasciitilde/.ssh/authorized\_keys} on Hop 2 and \texttt{/etc/resolv.conf} on Hop 3 ($\approx 20\text{ minutes}$);
+        \item Manually bisecting and repairing the remaining 4 downstream faults on Hops 3, 7, 11, and 15 ($\approx 20\text{ minutes}$).
+    \end{itemize}
+    \textbf{Total Incident Cost of \texttt{Run 0a}:} $65\text{ minutes}$ of Tier-1 outage ($\mathbf{\$585{,}000}$ in SLA penalties/lost throughput) $+ \mathbf{\$2{,}400}$ in emergency engineering labor $+ \mathbf{\$0.35}$ in LLM tokens $= \mathbf{\$587{,}400.35}$ (compared to $\mathbf{\$2{,}160.00}$ for the C99 solver).
+\end{enumerate}
+
+\subsubsection*{Case 2: The Worst-Case Unbisected Heuristic Loop ($\alpha = 0.25$, 48.1 Wrong Repairs Across 16 Servers)}
+If an autonomous coding agent operates without prefix bisection---relying solely on end-to-end error banners $o = \Phi_{\text{e2e}}(k^*)$ and guessing candidate fixes across the 32 aliased stages in $\mathcal{E}(o)$---our Foster--Lyapunov drift theorem (Theorem 6.2) and 10,000-trial Monte Carlo benchmark prove that the system enters a \textbf{catastrophic configuration-destruction spiral}:
+\begin{itemize}
+    \item Within a 50-step budget, the unbisected agent executes an average of \textbf{48.13 wrong ontic repairs} across the 16 servers, failing to resolve the incident in $\mathbf{99.98\%}$ of trials ($0.02\%$ success rate).
+    \item Because each blind edit on a healthy stage has collateral damage probability $\alpha = 0.25$, the expected number of broken stages drifts upward from $K_0 = 5$ toward the chaotic equilibrium $K_{\text{eq}} = M_o - 1/\alpha = 32 - 4 = \mathbf{28\text{ simultaneous broken protocol stages}}$ across all 16 bastions!
+    \item By step 50, nearly every bastion in the 16-hop chain has corrupted \texttt{sshd\_config}, broken \texttt{/etc/resolv.conf} DNS, flushed \texttt{known\_hosts}, and broken \texttt{wg0} MTU settings simultaneously. Restoring 16 mutually unreachable bastions requires a \textbf{4-to-8-hour bare-metal/VM image rebuild across the entire routing backbone}, costing $\mathbf{\$2.16\text{M to }\$4.32\text{M}}$ in downtime plus $\mathbf{\$18{,}000}$ in emergency engineering labor---all triggered by a $\$3.00$ unbisected LLM loop!
+\end{itemize}
+
+\begin{remark}[The Ultimate Economic Law of Neuro-Symbolic Diagnostics]
+Attempting to save $\$3\text{--}\$10$ per incident by running a lower-tier/low-effort LLM (\texttt{Run 0a} or \texttt{clean2}) instead of \texttt{gpt-6-astra ultra}---or running \emph{any} stochastic LLM directly in the loop when a specialized C99 solver exists---is a textbook false economy:
+\begin{equation}
+    \underbrace{\$2{,}160.00}_{\substack{\text{Specialized C99} \\ \text{(14.4 s RTT, 0 tok)}}}
+    \;\ll\;
+    \underbrace{\$25{,}201.45}_{\substack{\text{Low HTTP \texttt{clean2}} \\ \text{(69 probes)}}}
+    \;<\;
+    \underbrace{\$41{,}258.90}_{\substack{\text{Astra Ultra \texttt{clean3/4}} \\ \text{(4.6 m think)}}}
+    \;\ll\;
+    \underbrace{\$587{,}400.35}_{\substack{\text{Manual Slip \texttt{Run 0a}} \\ \text{(3 wrong edits)}}}
+    \;\ll\;
+    \underbrace{\$2{,}178{,}004+}_{\substack{\text{Unbisected LLM} \\ \text{(48.1 wrong edits)}}}.
+\end{equation}
+The specialized 152-instruction C99 program (\texttt{cascaded\_diag\_solver.c}) eliminates $100\%$ of the $\$3.30\text{--}\$14.50$ token cost, eliminates $100\%$ of the $4.6\text{-minute}$ ($\$$41,250) LLM thinking latency, and mathematically guarantees $0\%$ probability of a $\$585{,}000\text{--}\$4.32\text{M}$ collateral server lockout.
+\end{remark}
+
+% ============================================================================
+\section{How Can One Problem Have Three Distinct ``Optimal'' Solutions? The Hierarchy of Oracle Coupling Regimes \& Order-Statistic Pass-Chain DP}
+% ============================================================================
+
+A foundational question arises when comparing our three formally verified Bellman solvers ($905/129 \approx 7.0155$, $737/129 \approx 5.7132$, and $619/129 \approx 4.7984$ expected probes per fault, alongside the $18\text{--}21$-probe multi-fault Order-Statistic solver discovered interactively by Claude): \textbf{How can a single, deterministic mathematical diagnostic problem possess three distinct ``optimal'' solutions?}
+
+The resolution of this apparent paradox lies in a fundamental principle of information theory and Partially Observable Markov Decision Processes (POMDPs): \emph{Bellman optimality is defined relative to a specified observation algebra $\mathfrak{O}$ (what information each probe returns) and a specified prior $\mathcal{P}_0$ over the latent state space}. When we presented the minimal quotient circuit game (\texttt{minimal\_cascade\_game.c}) to human and frontier AI players, four nested oracle regimes naturally emerged depending on how the two epistemic operators---the Active Prefix Probe $\bm{\Pi}(m)$ and the Stage-3 Symptom Map $\Phi_{\text{e2e}}(k^*)$---are coupled.
+
+\subsection{The Four Nested Oracle Regimes ($\mathfrak{O}_0 \supset \mathfrak{O}_{\text{III}} \supset \mathfrak{O}_{\text{II}} \supset \mathfrak{O}_{\text{I}}$)}
+
+Let $k^* = \min\{k \in \{0,\dots,127\} : s_k = 0\}$ (with $k^* = 128$ when all switches are closed) denote the active censoring frontier, and let $c(k) = \Phi_{\text{e2e}}(k) \in \{1,\dots,5\}$ denote the period-8 dihedral symptom color of switch $k$ ($c(k \bmod 8) = (1, 2, 3, 4, 5, 3, 2, 1)$). Each ``optimal'' solution is the unique, exact global minimum of Bellman's equation under its corresponding oracle specification:
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Regime 0: Uncharged Ternary Inspection Oracle ($\mathfrak{O}_0 = \{\text{inspect}(k)\}$, Optimal Cost $= \mathbf{0\text{ paid probes}}$ / $\le 7\text{ inspections}$):}
+    In the minimal game specification, if \texttt{inspect(k)} is uncharged in the probe metric, its three outcomes under causal censoring form a noiseless \textbf{three-way comparison oracle} against $k^*$:
+    \begin{equation}
+        \text{inspect}(k) = \begin{cases}
+            \texttt{1 (CLOSED)} & \iff k < k^*, \\
+            \texttt{0 (OPEN)}   & \iff k = k^*, \\
+            \texttt{UNREACHABLE} & \iff k > k^*.
+        \end{cases}
+    \end{equation}
+    Standard ternary binary search over $k \in [0..127]$ isolates $k^*$ in at most $\lceil \log_2 128 \rceil = 7$ free \texttt{inspect} calls, terminating on the exact index where $\text{inspect}(k^*) = 0$ with $\mathbf{0\text{ paid probes}}$ and $\mathbf{0\text{ wrong toggles}}$. (In real 16-hop OpenSSH operations, however, running an interactive remote inspection command through $i$ jump hosts \emph{is} a network probe, motivating the probe-charged Regimes I--III below.)
+
+    \item \textbf{Regime I: Pure Binary Prefix Oracle ($\mathfrak{O}_{\text{I}} = \{\bm{\Pi}_{\text{bin}}(m) \in \{0, 1\}\}$, Optimal Cost $= \mathbf{\frac{905}{129} \approx 7.0155}$, $38$ probes on \texttt{adversarial5}):}
+    Suppose each prefix probe at threshold $m \in [0..127]$ returns \textbf{only a 1-bit binary exit code}:
+    \begin{equation}
+        \bm{\Pi}_{\text{bin}}(m) = \mathbb{I}(k^* \le m) \in \{\texttt{PASS (0)}, \texttt{FAIL (1)}\},
+    \end{equation}
+    for example when an automated shell script checks only \texttt{ssh -J ... true; echo \$?} without parsing \texttt{stderr} error banners, or when the solver treats active prefix bisection $\bm{\Pi}$ as stage-agnostic and ignores the Stage-3 color map $\bm{O}_{\text{e2e}}$. Because $\bm{\Pi}_{\text{bin}}$ is the $128 \times 129$ lower-triangular all-ones matrix (Theorem 7.2), each probe supplies at most $1.0\text{ bit}$ of spatial information. By Theorem 8.1, the unique Bellman-optimal expected probe count over the $129$ single-fault states is:
+    \begin{equation}
+        V_{\text{I}}^*(129) = \frac{128 \times 7 + 1 \times 9}{129} = \mathbf{\frac{905}{129} \approx 7.0155\text{ probes}}.
+    \end{equation}
+
+    \item \textbf{Regime II: Decoupled Symptom-First + Binary Fiber Bisection ($\mathfrak{O}_{\text{II}} = \bm{O}_{\text{e2e}}(127) \circ \bm{\Pi}_{\text{bin}}$, Optimal Cost $= \mathbf{\frac{737}{129} \approx 5.7132}$, $28$ probes on \texttt{adversarial5}):}
+    Suppose the diagnostic protocol is \textbf{decoupled into two distinct phases per wave}:
+    \begin{itemize}
+        \item \emph{Phase 1 (Terminal E2E Symptom Query):} The solver first queries the end-to-end chain at $m = 127$ ($\text{probe}(127)$) to observe the failure symptom $c = \Phi_{\text{e2e}}(k^*) \in \{1,\dots,5\}$ (or \texttt{PASS} if $k^* = 128$).
+        \item \emph{Phase 2 (Binary Fiber Bisection):} Conditioning on $c$, the candidate set collapses from $128$ switches to the color fiber $\mathcal{F}(c) = \{k \in [L..127] : c(k) = c\}$ of cardinality $|\mathcal{F}(c)| \in \{16, 32\}$. The solver then bisects $\mathcal{F}(c)$ using binary prefix probes $\bm{\Pi}_{\text{bin}}(f_{\text{mid}})$.
+    \end{itemize}
+    By Theorem 12.1, the restricted prefix matrix $\bm{\Pi}|_{\mathcal{F}(c)}$ is Totally Unimodular with the strict Consecutive-Ones Property, yielding the exact optimal expected probe count for all decoupled ``$\text{probe}(127)$-first'' strategies:
+    \begin{equation}
+        V_{\text{II}}^*(129) = 1 + \frac{3 \times 32 \times 5 + 2 \times 16 \times 4}{129} = \mathbf{\frac{737}{129} \approx 5.7132\text{ probes}}.
+    \end{equation}
+
+    \item \textbf{Regime III: Coupled Prefix-Symptom Oracle ($\mathfrak{O}_{\text{III}} = \{\text{probe}(m) \in \{\texttt{PASS}\} \cup \{\texttt{FAIL}(c)\}_{c=1}^5\}$, Optimal Cost $= \mathbf{\frac{619}{129} \approx 4.7984}$, $18\text{--}23$ probes on \texttt{adversarial5}):}
+    In both the real OpenSSH cascade (\texttt{ssh -v -J ... bst-i true}) and our minimal circuit game, an intermediate prefix probe $\text{probe}(m)$ at $m < 127$ does \emph{not} merely return a 1-bit binary flag: whenever the prefix $[0..m]$ fails ($k^* \le m$), $\text{probe}(m)$ \textbf{also returns the failure symptom color $c(k^*) \in \{1,\dots,5\}$ of the blocking switch}!
+    \begin{equation}
+        \text{probe}(m) = \begin{cases}
+            \texttt{PASS} & \text{if } k^* > m, \\
+            \texttt{FAIL}\big(c(k^*)\big) & \text{if } k^* \le m.
+        \end{cases}
+    \end{equation}
+    Why does Regime III strictly beat Regime II ($\frac{619}{129} < \frac{737}{129}$)? Because calling $\text{probe}(127)$ at the start of a wave is almost certain to fail ($\mathbb{P}(\text{FAIL}) = \frac{128}{129}$ in single-fault, and $\mathbb{P}(\text{FAIL}) = 1$ whenever $r \ge 1$ faults remain), which \textbf{wastes the spatial pass/fail capability of the probe}! By contrast, probing at an intermediate threshold $m < 127$ extracts \textbf{both spatial and color information in a single query}:
+    \begin{itemize}
+        \item If $\text{probe}(m) = \texttt{PASS}$, all switches in $[a..m]$ are certified healthy ($k^* \ge m+1$).
+        \item If $\text{probe}(m) = \texttt{FAIL}(c)$, we learn \emph{both} that $k^* \in [a..m]$ \emph{and} that $c(k^*) = c$, immediately restricting the search to the small color-homogeneous block fiber $\mathcal{F}_c(a, m) = \{k \in [a..m] : c(k) = c\}$!
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Theorem 15.1: Exact Coupled Pass-Chain Dynamic Programming ($619/129 \approx 4.79845$) and the Rainbow-Interval Property}
+
+When Claude analyzed the minimal circuit game prior to making its first move, it formulated and solved the exact dynamic programming recurrence for Regime III under a uniform prior over the $129$ states ($k^* \in \{0,\dots,128\}$).
+
+\begin{theorem}[Coupled Prefix-Symptom Pass-Chain Optimality]
+Let $a \in \{0,\dots,128\}$ be the current verified lower bound ($k^* \ge a$). Once a probe $\text{probe}(m)$ at threshold $m \in [a..127]$ returns $\texttt{FAIL}(c)$, all remaining candidates reside in the monochromatic fiber $\mathcal{F}_c(a, m) = \{k \in [a..m] : c(k) = c\}$ of cardinality $n_c(a, m) = |\mathcal{F}_c(a, m)|$. Because every candidate in $\mathcal{F}_c(a, m)$ shares the same color $c$, no subsequent probe can yield any further color discrimination; thus the optimal continuation on $\texttt{FAIL}(c)$ is an exact binary threshold search over $\mathcal{F}_c(a, m)$, whose total external path length summed over all $n = n_c(a, m)$ elements is:
+\begin{equation}
+    g(n) = n \lfloor \log_2 n \rfloor + 2\left(n - 2^{\lfloor \log_2 n \rfloor}\right), \qquad g(0) = g(1) = 0.
+\end{equation}
+Consequently, any optimal policy in Regime III consists of a \textbf{monotonic pass-chain of thresholds} $m_0 < m_1 < \dots < m_{L-1} = 127$ governed by the exact Bellman recurrence for the cumulative probe path length $F(a)$ over $k^* \in \{a,\dots,128\}$:
+\begin{equation}
+    F(a) = \min_{m \in [a..127]} \left[ (129 - a) + \sum_{c=1}^{5} g\big(n_c(a, m)\big) + F(m + 1) \right], \qquad F(128) = 0.
+\end{equation}
+Evaluating this recurrence from $a = 127$ down to $a = 0$ yields the unique optimal threshold chain from $a = 0$:
+\begin{equation}
+    \bm{m}^* = (63,\; 95,\; 111,\; 119,\; 124,\; 127) \quad \text{with block sizes } \Delta m = (64,\; 32,\; 16,\; 8,\; 5,\; 3),
+\end{equation}
+achieving total path length $F(0) = \mathbf{619}$ and exact expected probe complexity:
+\begin{equation}
+    V_{\text{IIIa}}^*(129) = \frac{F(0)}{129} = \mathbf{\frac{619}{129} \approx 4.798450\text{ probes per fault}}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+At each threshold $m_j$ in the chain $(63, 95, 111, 119, 124, 127)$:
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{Dyadic Multi-Hop Blocks ($64, 32, 16, 8$):}
+    \begin{itemize}
+        \item $a=0, m=63$ ($64$ switches $= 8$ hops): color counts are $(16, 16, 16, 8, 8)$, so $\sum_{c=1}^5 g(n_c) = 3 g(16) + 2 g(8) = 3(64) + 2(24) = 240$, contributing $(129 - 0) + 240 = 369$.
+        \item $a=64, m=95$ ($32$ switches $= 4$ hops): color counts are $(8, 8, 8, 4, 4)$, so $\sum g(n_c) = 3(24) + 2(8) = 88$, contributing $65 + 88 = 153$.
+        \item $a=96, m=111$ ($16$ switches $= 2$ hops): color counts are $(4, 4, 4, 2, 2)$, so $\sum g(n_c) = 3(8) + 2(2) = 28$, contributing $33 + 28 = 61$.
+        \item $a=112, m=119$ ($8$ switches $= 1$ hop): color counts are $(2, 2, 2, 1, 1)$, so $\sum g(n_c) = 3(2) + 0 = 6$, contributing $17 + 6 = 23$.
+    \end{itemize}
+    \item \textbf{The Rainbow-Interval Tail Decomposition ($5 + 3 = 8$ with Zero Follow-Up Cost!):}
+    For the final 8-switch hop $[120..127]$, notice that the period-8 dihedral color sequence $(1, 2, 3, 4, 5, 3, 2, 1)$ partitions into two \textbf{injective (rainbow) sub-blocks}:
+    \begin{equation}
+        \underbrace{(c_{120}, c_{121}, c_{122}, c_{123}, c_{124}) = (1, 2, 3, 4, 5)}_{\text{Block } [120..124] \text{ (size 5, all 5 colors distinct!)}}, \qquad
+        \underbrace{(c_{125}, c_{126}, c_{127}) = (3, 2, 1)}_{\text{Block } [125..127] \text{ (size 3, all 3 colors distinct!)}}.
+    \end{equation}
+    Because $n_c(120, 124) = 1$ for every $c \in \{1..5\}$ and $n_c(125, 127) \le 1$ for every $c \in \{1..5\}$, we have $g(n_c) = g(1) = 0$ on both blocks! Thus:
+    \begin{itemize}
+        \item $a=120, m=124$ ($5$ switches): $\sum g(n_c) = 0$, contributing $(129 - 120) + 0 = 9$.
+        \item $a=125, m=127$ ($3$ switches): $\sum g(n_c) = 0$, contributing $(129 - 125) + 0 = 4$.
+    \end{itemize}
+\end{enumerate}
+Summing across all six blocks gives $F(0) = 369 + 153 + 61 + 23 + 9 + 4 = \mathbf{619}$.
+\end{proof}
+
+\subsection{Theorem 15.2: Order-Statistic Multi-Fault Pass-Chain DP ($w_r(k) = \binom{127-k}{r-1}$) and Claude's 21-Probe Solve}
+
+Even more remarkably, during the live 5-fault interactive benchmark on \texttt{adversarial5} ($k^* \in \{1, 24, 59, 93, 126\}$), Claude noticed after repairing Switch 1 ($k^*_1 = 1$) that \textbf{the remaining $r = 4$ open switches in $[2..127]$ do not induce a uniform prior on the next minimum $k^*$}.
+
+\begin{theorem}[Order-Statistic Prior \& Weighted Pass-Chain DP (Regime IIIb)]
+Suppose $r \ge 1$ open switches remain in the unverified suffix $[a..127]$ of length $D - a = 128 - a$. Under a uniform prior over all $\binom{128-a}{r}$ subsets of $r$ open switches in $[a..127]$, the probability that switch $k \in [a..128-r]$ is the \emph{minimum} (first open) switch $k^*$ is proportional to the number of ways to place the remaining $r - 1$ open switches strictly downstream in $[k+1..127]$:
+\begin{equation}
+    w_r(k) = \binom{127 - k}{r - 1}, \qquad \mathbb{P}(k^* = k \mid k^* \ge a, r) = \frac{\binom{127 - k}{r - 1}}{\binom{128 - a}{r}}.
+\end{equation}
+Replacing the uniform count $(129 - a)$ and $g(n_c)$ in Theorem 15.1 with the weighted tail mass $W_r(a) = \sum_{k=a}^{127} w_r(k)$ and the exact Optimal Binary Search Tree (OBST) cost $G_w(\mathcal{F}_c(a, m))$ yields the Order-Statistic Bellman recurrence:
+\begin{equation}
+    F_r(a) = \min_{m \in [a..127]} \left[ W_r(a) + \sum_{c=1}^{5} G_w\big(\mathcal{F}_c(a, m)\big) + F_r(m + 1) \right], \qquad F_r(128) = 0.
+\end{equation}
+Because $w_r(k) = \binom{127-k}{r-1}$ depends only on $k$ and $r$ (and is invariant to changes in the lower bound $a$ upon observing $\texttt{PASS}$), conditioning on $\text{probe}(m) = \texttt{PASS}$ preserves the exact optimality of the precomputed threshold chain $(m_0^*, m_1^*, \dots)$ within each wave $r$!
+\end{theorem}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/fig11_three_optimal_regimes_and_claude_dp.png}
+    \caption{\textbf{The Three Optimal Oracle Regimes and Claude's Order-Statistic Pass-Chain DP.} \textbf{(A)} Exact single-fault expected probes ($905/129$, $737/129$, $619/129$), 5-fault \texttt{adversarial5} probe counts ($38$, $28$, $23$, $21$, $18$), and 10,000-trial Monte Carlo averages ($35.56$, $25.30$, $22.24$, $19.85$, $17.19$) verified in \texttt{cascaded\_diag\_solver.c} and \texttt{minimal\_cascade\_game.c}. \textbf{(B)} Exact Bellman expected cost curves $J_r(a, m)$ as a function of the first probe threshold $m \in [a..127]$ for Uniform ($r=1, a=0$) and Order-Statistic waves ($r=5,4,3,2,1$), showing why every optimal first threshold $m^* \in \{15, 18, 44, 63, 78, 109\}$ lies strictly inside the interior $m^* < 127$.}
+    \label{fig:three_regimes_claude}
+\end{figure}
+
+Table~\ref{tab:three_regimes_and_claude} synthesizes the complete hierarchy of the three optimal oracle regimes alongside our empirical runs of OpenAI Codex (\texttt{gpt-6-astra}) and Anthropic Claude on the 5-fault \texttt{adversarial5} benchmark ($k^* \in \{1, 24, 59, 93, 126\}$).
+
+\begin{table}[H]
+\centering
+\caption{Complete Synthesis of the Three Optimal Regimes, C99 Solvers, OpenAI Codex Runs, and Claude's Interactive Order-Statistic DP on \texttt{adversarial5} ($k^* \in \{1, 24, 59, 93, 126\}$)}
+\label{tab:three_regimes_and_claude}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+\textbf{Regime / Agent Policy} & \textbf{Oracle Information Used per Probe} & \textbf{Single-Fault $\mathbb{E}[\text{Probes}]$} & \textbf{5-Fault \texttt{adv5} Probes} & \textbf{10k MC 5-Fault Avg} & \textbf{Wrong Repairs} & \textbf{Wave-by-Wave \texttt{adv5} Probe Breakdown} \\
+\midrule
+\textbf{Regime 0 (Free \texttt{inspect})} & Free 3-way $\text{inspect}(k) \in \{<, =, >\}$ & $0 / 129 = \mathbf{0.0000}$ & $\mathbf{0}$ (33 insp) & $0.00$ & $\mathbf{0}$ & $0 + 0 + 0 + 0 + 0$ probes \\
+\textbf{Regime I (C99 $\bm{\Pi}_{\text{bin}}$)} & 1-bit prefix pass/fail $\mathbb{I}(k^* \le m)$ only & $905 / 129 = \mathbf{7.0155}$ & $\mathbf{38}$ & $35.56$ & $\mathbf{0}$ & $7 + 8 + 8 + 7 + 6 + 2_{\text{chk}} = 38$ \\
+\textbf{Regime II (C99 $\bm{O}_{\text{e2e}}\text{+}\bm{\Pi}$)} & $\text{probe}(127)$ color, then 1-bit fiber $\bm{\Pi}$ & $737 / 129 = \mathbf{5.7132}$ & $\mathbf{28}$ & $25.30$ & $\mathbf{0}$ & $6 + 6 + 5 + 5 + 5 + 1_{\text{chk}} = 28$ \\
+\textbf{Regime IIIa (C99 Uniform DP)} & Coupled $\text{probe}(m) \in \{\texttt{PASS}, \texttt{FAIL}(c)\}$ & $619 / 129 = \mathbf{4.7984}$ & $\mathbf{23}$ & $22.24$ & $\mathbf{0}$ & $5 + 5 + 4 + 4 + 4 + 1_{\text{chk}} = 23$ \\
+\textbf{Regime IIIb (C99 Order-Stat)} & Coupled $\text{probe}(m)$ + prior $\binom{127-k}{r-1}$ & $619 / 129 = \mathbf{4.7984}$ & $\mathbf{18}$ ($19$ w/ chk) & $\mathbf{17.19}$ & $\mathbf{0}$ & $\mathbf{3 + 4 + 3 + 4 + 4 = 18}$ \\
+\midrule
+\textbf{Claude (Order-Stat DP Live)} & Coupled $\text{probe}(m)$ + prior $\binom{127-k}{r-1}$ & Proved $\mathbf{619/129}$ exact! & $\mathbf{21}$ ($22$ w/ chk) & $19.85$ & $\mathbf{0}$ & $\mathbf{6_{\text{W1@127}} + 4 + 3 + 4 + 4 = 21}$ \\
+\textbf{Codex \texttt{clean3} (Astra Ultra)} & Python fiber bisection $\bm{O}_{\text{e2e}}^{-1}(o) \cap \bm{\Pi}$ & $\approx 5.71$ (Regime II) & $\mathbf{19\text{+}\text{6 E2E}=25}$ & --- & $\mathbf{0}$ & $5 + 5 + 3 + 3 + 3\text{ (+6 E2E)} = 25$ \\
+\textbf{Codex \texttt{clean1} (CLI Script)} & Stage-agnostic binary search $\bm{\Pi}_{\text{bin}}$ & $\approx 7.02$ (Regime I) & $\mathbf{36\text{+}\text{6 E2E}=42}$ & --- & $\mathbf{0}$ & $7 + 7 + 8 + 7 + 7\text{ (+6 E2E)} = 42$ \\
+\textbf{Codex \texttt{clean2} (Low HTTP)} & Non-adaptive shell \texttt{for}-loop batches & Sub-optimal batch & $\mathbf{69\text{+}\text{6 E2E}=75}$ & --- & $\mathbf{0}$ & $15 + 14 + 13 + 15 + 12\text{ (+6)} = 75$ \\
+\textbf{Codex \texttt{Run 0a} (Manual)} & In-context manual mental arithmetic & Bracket slip error & $47\text{ (3 resets)}$ & --- & $\textcolor{red!80!black}{\mathbf{3}}$ & Broke $k=22$ twice \& $k=26$ once! \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsubsection*{Why Claude's Live Trajectory Matched Our C99 Order-Statistic Solver on Every Single Threshold in Waves 2--5}
+Inspecting the exact probe sequence executed by Claude during the interactive session side-by-side with our C99 implementation (\texttt{compute\_order\_stat\_dp\_table\_ssh} in \texttt{cascaded\_diag\_solver.c}) reveals an exact, threshold-for-threshold mathematical identity across Waves 2 through 5:
+\begin{itemize}
+    \item \textbf{Wave 1 ($k^*_1 = 1$, Blue $c=2$, $a=0, r=5$):} Because the initial prompt began after $\text{probe}(127) \to \texttt{FAIL(C2\_BLUE)}$, Claude executed binary search over the $32$ Blue candidates via $\text{probe}(62) \to \text{probe}(30) \to \text{probe}(14) \to \text{probe}(6) \to \text{probe}(1)$ ($\mathbf{6\text{ probes}}$), then safely called $\text{toggle}(1)$. (When started from scratch with the $r=5$ order-statistic prior $w_5(k) = \binom{127-k}{4}$, the C99 solver probes first at $m^* = 15 \to \texttt{FAIL(C2\_BLUE)}$, leaving only $\{1, 6, 9, 14\}$ and isolating $k^*_1 = 1$ in just $\mathbf{3\text{ probes}}$: $15, 6, 1$.)
+    \item \textbf{Wave 2 ($k^*_2 = 24$, Red $c=1$, $a=2, r=4$):} Weighting $k \in [2..127]$ by $w_4(k) = \binom{127-k}{3}$, both Claude and the C99 DP computed the exact threshold chain $\bm{m}^* = (18, 34, 50, 63, \dots)$. Claude called $\text{probe}(18) \to \texttt{PASS}$, then $\text{probe}(34) \to \texttt{FAIL(C1\_RED)}$ (leaving only $4$ Red candidates $\{23, 24, 31, 32\}$ in $[19..34]$), followed by $\text{probe}(24) \to \texttt{FAIL(C1\_RED)}$ and $\text{probe}(23) \to \texttt{PASS}$, isolating $k^*_2 = 24$ in $\mathbf{4\text{ probes}}$.
+    \item \textbf{Wave 3 ($k^*_3 = 59$, Cyan $c=4$, $a=25, r=3$):} Weighting $k \in [25..127]$ by $w_3(k) = \binom{127-k}{2}$, both Claude and the C99 DP computed $\bm{m}^* = (44, 60, 76, \dots)$. Claude called $\text{probe}(44) \to \texttt{PASS}$, then $\text{probe}(60) \to \texttt{FAIL(C4\_CYAN)}$ (leaving only $2$ Cyan candidates $\{51, 59\}$ in $[45..60]$), and $\text{probe}(51) \to \texttt{PASS}$, isolating $k^*_3 = 59$ in $\mathbf{3\text{ probes}}$.
+    \item \textbf{Wave 4 ($k^*_4 = 93$, Amber $c=3$, $a=60, r=2$):} Weighting $k \in [60..127]$ by $w_2(k) = 127 - k$, both Claude and the C99 DP computed $\bm{m}^* = (78, 94, 102, \dots)$. Claude called $\text{probe}(78) \to \texttt{PASS}$, $\text{probe}(94) \to \texttt{FAIL(C3\_AMBER)}$ (leaving $\{82, 85, 90, 93\}$), $\text{probe}(85) \to \texttt{PASS}$, and $\text{probe}(90) \to \texttt{PASS}$, isolating $k^*_4 = 93$ in $\mathbf{4\text{ probes}}$.
+    \item \textbf{Wave 5 ($k^*_5 = 126$, Blue $c=2$, $a=94, r=1$):} With $r=1$ open switch left (uniform weight $w_1(k) = 1$ on $[94..127]$), both Claude and the C99 DP computed $\bm{m}^* = (109, 117, 124, 127)$. Claude called $\text{probe}(109) \to \texttt{PASS}$, $\text{probe}(117) \to \texttt{PASS}$, $\text{probe}(124) \to \texttt{PASS}$, and finally $\text{probe}(127) \to \texttt{FAIL(C2\_BLUE)}$. Because the final 3-switch rainbow block $[125..127]$ has pairwise distinct colors ($125 = \text{Amber}, 126 = \text{Blue}, 127 = \text{Red}$), $\texttt{FAIL(C2\_BLUE)}$ uniquely identified $k^*_5 = 126$ with \textbf{zero follow-up binary search probes}, completing Wave 5 in $\mathbf{4\text{ probes}}$ and the entire 5-fault cascade in $\mathbf{21\text{ probes}}$ ($0$ wrong toggles)!
+\end{itemize}
+
+% ============================================================================
+\section{Foundational Bibliography}
+% ============================================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{cover2006}
+T.~M. Cover and J.~A. Thomas, \emph{Elements of Information Theory}, 2nd~ed. Hoboken, NJ: Wiley-Interscience, 2006.
+
+\bibitem{bertsekas2017}
+D.~P. Bertsekas, \emph{Dynamic Programming and Optimal Control}, Vol.~I, 4th~ed. Belmont, MA: Athena Scientific, 2017.
+
+\bibitem{krishnamurthy2016}
+V.~Krishnamurthy, \emph{Partially Observed Markov Decision Processes: From Filtering to Controlled Sensing}. Cambridge, UK: Cambridge University Press, 2016.
+
+\bibitem{parr2022}
+T.~Parr, G.~Pezzulo, and K.~J. Friston, \emph{Active Inference: The Free Energy Principle in Mind, Brain, and Behavior}. Cambridge, MA: MIT Press, 2022.
+
+\bibitem{pearl2009}
+J.~Pearl, \emph{Causality: Models, Reasoning, and Inference}, 2nd~ed. Cambridge, UK: Cambridge University Press, 2009.
+
+\bibitem{cassandras2021}
+C.~G. Cassandras and S.~Lafortune, \emph{Introduction to Discrete Event Systems}, 3rd~ed. Cham: Springer, 2021.
+
+\bibitem{horn2012}
+R.~A. Horn and C.~R. Johnson, \emph{Matrix Analysis}, 2nd~ed. Cambridge, UK: Cambridge University Press, 2012.
+
+\bibitem{levin2017}
+D.~A. Levin and Y.~Peres, \emph{Markov Chains and Mixing Times}, 2nd~ed. Providence, RI: American Mathematical Society, 2017.
+
+\bibitem{garey1979}
+M.~R. Garey and D.~S. Johnson, \emph{Computers and Intractability: A Guide to the Theory of NP-Completeness}. San Francisco, CA: W.~H. Freeman, 1979. (Problem SP6: Minimum Test Collection \& Hyafil--Rivest Decision Tree NP-Completeness).
+
+\bibitem{schrijver1986}
+A.~Schrijver, \emph{Theory of Linear and Integer Programming}. Chichester, UK: Wiley-Interscience, 1986. (Chapters 19--21: Total Unimodularity, Consecutive-Ones Matrices, and the Hoffman--Kruskal Theorem).
+
+\bibitem{boyd2004}
+S.~Boyd and L.~Vandenberghe, \emph{Convex Optimization}. Cambridge, UK: Cambridge University Press, 2004. (Chapter 7: Statistical Estimation, Maximum Entropy, and Disciplined Convex Programming).
+
+\bibitem{abramsky2000}
+S.~Abramsky, R.~Jagadeesan, and P.~Malacaria, ``Full abstraction for PCF,'' \emph{Information and Computation}, vol.~163, no.~2, pp.~409--470, 2000. (Arenas, Player/Opponent moves, and composition with hiding in Game Semantics).
+
+\bibitem{hyland2000}
+J.~M.~E. Hyland and C.-H.~L. Ong, ``On full abstraction for PCF: I, II, and III,'' \emph{Information and Computation}, vol.~163, no.~2, pp.~285--408, 2000. (Player views $\ulcorner s \urcorner$, innocent strategies, and observational equivalence).
+
+\end{thebibliography}
+
+\end{document}

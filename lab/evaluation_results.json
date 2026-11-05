@@ -1,0 +1,12 @@
+{
+  "model": "gpt-6-luna",
+  "reasoning_effort": "low",
+  "created_unix": 1793045410,
+  "cases": [],
+  "error": {
+    "case": "sparse_failure",
+    "http_status": 429,
+    "code": "project_spend_limit_exceeded",
+    "message": "Project spend limit reached; no model response was generated."
+  }
+}
