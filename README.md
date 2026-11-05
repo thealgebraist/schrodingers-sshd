@@ -152,11 +152,27 @@ gcc -std=c99 -Wall -Wextra -Werror -pedantic -O3 complex_dual_ssh_diagnoser.c -l
 coqc ssh_priority_invariant.v
 ```
 
+### 7. Run the 3-Component Dual TCP Simulation (Peer-Channel-Loki Architecture)
+```bash
+gcc -std=c99 -Wall -Wextra -Werror -pedantic -O3 dual_tcp_3comp_simulation.c -lm -o dual_tcp_3comp_simulation
+
+# Run 1,200 ticks across all rotating adversarial regimes:
+./dual_tcp_3comp_simulation --ticks 1200
+
+# Run 10,000-tick rigorous benchmark:
+./dual_tcp_3comp_simulation --benchmark
+
+# Run isolated attack ablation with JSON telemetry:
+./dual_tcp_3comp_simulation --ticks 500 --regime blind_rst --json
+```
+
 ---
 
 ## Repository Structure
 
 ```text
+├── dual_tcp_3comp_simulation.c    # 3-Component Dual TCP (Peers <-> Gilbert-Elliott Channel <-> Loki Adversary)
+├── dual_tcp_complex_model.c       # Dual RFC 9293 & Bayesian HMM TCP cell in C^d
 ├── complex_dual_ssh_diagnoser.c   # Dual Bayesian & polynomial C99 engine in C^N (< 5 µs)
 ├── ssh_priority_invariant.v       # Mechanically verified Coq proof of causal priority (Qed)
 ├── kami_ssh_cell.v                # MIT Kami (Coq) formal refinement proof
